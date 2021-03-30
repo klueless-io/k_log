@@ -94,10 +94,8 @@ Aaa::Bbb::Program.execute()
 To release a new version, update the version number in `version.rb`, build the gem and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ```bash
-gem build
-gem push rspec-usecases-?.?.??.gem
-# or push the latest gem
-ls *.gem | sort -r | head -1 | xargs gem push
+rake publish
+rake clean
 ```
 
 ## Contributing
