@@ -1,6 +1,6 @@
 # K Log
 
-> KLog provides console logging helpers and formatters
+> K Log provides console logging helpers and formatters
 
 As a Developer, I need formatted console logs, so that information presents clearly
 
@@ -8,12 +8,14 @@ As a Developer, I need formatted console logs, so that information presents clea
 
 ### Sample Classes
 
-#### Simple example
+#### Setup KLog
 
-Description for a simple example that shows up in the USAGE.MD
+Pass a standard Logger to KLog and then setup an alias for easier access
 
 ```ruby
-class SomeRuby
-  def initialize; end
-end
+KLog.logger = Logger.new($stdout)
+KLog.logger.level = Logger::DEBUG
+KLog.logger.formatter = KLog::LogFormatter.new
+
+L = KLog::LogUtil.new(KLog.logger)
 ```
