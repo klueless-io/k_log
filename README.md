@@ -1,6 +1,6 @@
 # K Log
 
-> KLog provides console logging helpers and formatters
+> K Log provides console logging helpers and formatters
 
 ## Installation
 
@@ -26,16 +26,49 @@ gem install k_log
 
 ### Main Story
 
-
+As a Developer, I need formatted console logs, so that information presents clearly
 
 See all [stories](./STORIES.md)
-
 
 ## Usage
 
 See all [usage examples](./USAGE.md)
 
+### Basic Example
 
+#### Setup KLog
+
+Pass a standard Logger to KLog and then setup an alias for easier access
+
+```ruby
+KLog.logger = Logger.new($stdout)
+KLog.logger.level = Logger::DEBUG
+KLog.logger.formatter = KLog::LogFormatter.new
+
+L = KLog::LogUtil.new(KLog.logger)
+```
+
+#### Sample Usage
+
+```ruby
+L.debug 'some debug message'
+L.info 'some info message'
+L.warn 'some warning message'
+L.error 'some error message'
+L.fatal 'some fatal message'
+
+L.kv('First Name', 'David')
+L.kv('Last Name', 'Cruwys')
+L.kv('Age', 45)
+L.kv('Sex', 'male')
+
+L.line
+L.line(20)
+L.line(20, character: '-')
+
+L.heading('Heading')
+L.subheading('Sub Heading')
+```
 
 ## Development
 
@@ -45,7 +78,7 @@ Checkout the repo
 git clone klueless-io/k_log
 ```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. 
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests.
 
 You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 

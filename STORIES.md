@@ -1,6 +1,6 @@
 # K Log
 
-> KLog provides console logging helpers and formatters
+> K Log provides console logging helpers and formatters
 
 As a Developer, I need formatted console logs, so that information presents clearly
 
@@ -8,9 +8,9 @@ As a Developer, I need formatted console logs, so that information presents clea
 
 ### Stories next on list
 
-As a Developer, I can DO_SOMETHING, so that I QUALITY_OF_LIFE
+As a Developer, I need formatted console logs, so that information presents clearly
 
-- Subtask
+- A range of helper methods that write formatted log entries to the console
 
 ### Tasks next on list
 
