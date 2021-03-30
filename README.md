@@ -1,6 +1,6 @@
 # K Log
 
-> KLog provides console logging helpers and formatters
+> K Log provides console logging helpers and formatters
 
 ## Installation
 
@@ -36,12 +36,38 @@ See all [usage examples](./USAGE.md)
 
 ### Basic Example
 
-#### Basic example
+#### Setup KLog
 
-Description for a basic example to be featured in the main README.MD file
+Pass a standard Logger to KLog and then setup an alias for easier access
 
 ```ruby
-class SomeRuby; end
+KLog.logger = Logger.new($stdout)
+KLog.logger.level = Logger::DEBUG
+KLog.logger.formatter = KLog::LogFormatter.new
+
+L = KLog::LogUtil.new(KLog.logger)
+```
+
+#### Sample Usage
+
+```ruby
+L.debug 'some debug message'
+L.info 'some info message'
+L.warn 'some warning message'
+L.error 'some error message'
+L.fatal 'some fatal message'
+
+L.kv('First Name', 'David')
+L.kv('Last Name', 'Cruwys')
+L.kv('Age', 45)
+L.kv('Sex', 'male')
+
+L.line
+L.line(20)
+L.line(20, character: '-')
+
+L.heading('Heading')
+L.subheading('Sub Heading')
 ```
 
 ## Development
