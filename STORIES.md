@@ -12,21 +12,14 @@ As a Developer, I need formatted console logs, so that information presents clea
 
 - A range of helper methods that write formatted log entries to the console
 
-### Tasks next on list
+## Stories and tasks
+
+### Tasks - completed
 
 Setup RubyGems and RubyDoc
 
 - Build and deploy gem to [rubygems.org](https://rubygems.org/gems/k_log)
 - Attach documentation to [rubydoc.info](https://rubydoc.info/github/to-do-/k_log/master)
-
-Setup GitHub Action (test and lint)
-
-- Setup Rspec action
-- Setup RuboCop action
-
-## Stories and tasks
-
-### Tasks - completed
 
 Setup project management, requirement and SCRUM documents
 
@@ -34,6 +27,11 @@ Setup project management, requirement and SCRUM documents
 - Setup user stories and tasks
 - Setup a project backlog
 - Setup an examples/usage document
+
+Setup GitHub Action (test and lint)
+
+- Setup Rspec action
+- Setup RuboCop action
 
 Setup new Ruby GEM
 
