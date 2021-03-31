@@ -67,11 +67,12 @@ module KLog
     # example:
     # [ I am a heading ]----------------------------------------------------
     def self.section_heading(heading, size = 70)
-      heading = "[ #{heading} ]"
-      line = line(size - heading.length, '-')
+      brace_open = green("[ ")
+      brace_close = green(" ]")
+      line = line(size - heading.length-4, '-')
 
       # It is important that you set the colour after you have calculated the size
-      "#{green(heading)}#{line}"
+      "#{brace_open}#{heading}#{brace_close}#{green(line)}"
     end
 
     # :sql_array should be an array with SQL and values
