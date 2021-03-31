@@ -2,6 +2,8 @@
 
 > K Log provides console logging helpers and formatters
 
+This code is old and probably needs to be written differently, but it solves my problem of having formatted console logging within different Apps and Gems that I write.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -62,13 +64,17 @@ L.kv('Last Name', 'Cruwys')
 L.kv('Age', 45)
 L.kv('Sex', 'male')
 
-L.line
-L.line(20)
-L.line(20, character: '-')
-
 L.heading('Heading')
 L.subheading('Sub Heading')
+
+L.block ['Line 1', 12, 'Line 3', true, 'Line 5']
+
+L.progress(0, 'Section 1')
+L.progress
+L.progress
 ```
+
+![Usage](usage.png)
 
 ## Development
 
@@ -79,15 +85,6 @@ git clone klueless-io/k_log
 ```
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests.
-
-You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-```bash
-bin/console
-
-Aaa::Bbb::Program.execute()
-# => ""
-```
 
 `k_log` is setup with Guard, run `guard`, this will watch development file changes and run tests automatically, if successful, it will then run rubocop for style quality.
 
