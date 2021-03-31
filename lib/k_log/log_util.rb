@@ -17,7 +17,6 @@ module KLog
   class LogUtil
     def initialize(logger)
       @logger = logger
-      @fuck = true
     end
 
     # include ActiveSupport::LoggerThreadSafeLevel
