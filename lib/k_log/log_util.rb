@@ -147,10 +147,11 @@ module KLog
             indent = indent.chomp('  ')
           end
         when Array
-          next if opts[:skip_array].present?
+          next unless opts[:skip_array].nil?
 
-          # puts LogHelper.subheading(key, 88)# if opts[:subheading].present?
-          puts LogHelper.subheading(opts[:subheading], 88) if opts[:subheading].present?
+          # puts LogHelper.subheading(key, 88)# unless opts[:subheading].nil?
+          puts LogHelper.subheading(opts[:subheading], 88) unless opts[:subheading].nil?
+
           if value.length.positive?
             if value.first.is_a?(String)
               L.kv "#{indent}#{key}", value.join(', ')
