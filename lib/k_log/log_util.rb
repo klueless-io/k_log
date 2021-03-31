@@ -240,6 +240,10 @@ module KLog
 
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def self.examples
+      examples_simple
+      # examples_complex
+    end
+    def self.examples_simple
       L.debug 'some debug message'
       L.info 'some info message'
       L.warn 'some warning message'
@@ -253,7 +257,9 @@ module KLog
 
       L.heading('Heading')
       L.subheading('Sub Heading')
-
+      L.section_heading('Section Heading')
+    end
+    def self.examples_complex
       L.block ['Line 1', 12, 'Line 3', true, 'Line 5']
 
       L.progress(0, 'Section 1')
