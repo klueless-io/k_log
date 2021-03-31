@@ -8,7 +8,7 @@ require 'English'
 
 exit 0 if ARGV.include?('--no-verify')
 
-warning_keywords = %w[console.log]
+warning_keywords = %w[]
 keywords = %w[binding.pry console.dir byebug debugger]
 files_changed = `git diff-index --name-only HEAD --`.split
 
@@ -23,7 +23,7 @@ files_changed -= ['Gemfile']
 files_changed -= ['Gemfile.lock']
 files_changed -= ['.gitignore']
 
-files_changed = files_changed.reject { |f| f.downcase.end_with?('.MD') }
+files_changed = files_changed.reject { |f| f.downcase.end_with?('.mds') }
 files_changed = files_changed.reject { |f| f.downcase.end_with?('.json') }
 files_changed = files_changed.reject { |f| f.downcase.end_with?('.yml') }
 
