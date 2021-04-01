@@ -15,11 +15,16 @@ module KLog
   class << self
     attr_accessor :logger
   end
+
+  def self.default_logger
+    return @default_logger if defined? @default_logger
+    @default_logger = begin
+      logger = Logger.new($stdout)
+      logger.level = Logger::DEBUG
+      logger.formatter = KLog::LogFormatter.new
+      KLog::LogUtil.new(logger)
+    end      
+  end
 end
 
-# KLog.logger = Logger.new($stdout)
-# KLog.logger.level = Logger::DEBUG
-# KLog.logger.formatter = KLog::LogFormatter.new
-
-# L = KLog::LogUtil.new(KLog.logger)
 puts "KLog::Version: #{KLog::VERSION}" if ENV['KLUE_DEBUG']&.to_s&.downcase == 'true'
