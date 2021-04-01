@@ -243,6 +243,7 @@ module KLog
       examples_simple
       # examples_complex
     end
+
     def self.examples_simple
       L.debug 'some debug message'
       L.info 'some info message'
@@ -259,6 +260,7 @@ module KLog
       L.subheading('Sub Heading')
       L.section_heading('Section Heading')
     end
+
     def self.examples_complex
       L.block ['Line 1', 12, 'Line 3', true, 'Line 5']
 
