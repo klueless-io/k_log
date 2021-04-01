@@ -22,3 +22,4 @@ end
 # KLog.logger.formatter = KLog::LogFormatter.new
 
 # L = KLog::LogUtil.new(KLog.logger)
+puts "KLog::Version: #{KLog::VERSION}" if ENV['KLUE_DEBUG']&.to_s&.downcase == 'true'

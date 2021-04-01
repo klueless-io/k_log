@@ -149,8 +149,7 @@ module KLog
         when Array
           next unless opts[:skip_array].nil?
 
-          # puts LogHelper.subheading(key, 88)# unless opts[:subheading].nil?
-          puts LogHelper.subheading(opts[:subheading], 88) unless opts[:subheading].nil?
+          puts LogHelper.section_heading(opts[:subheading], 88) unless opts[:subheading].nil?
 
           if value.length.positive?
             if value.first.is_a?(String)
