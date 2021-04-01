@@ -67,9 +67,9 @@ module KLog
     # example:
     # [ I am a heading ]----------------------------------------------------
     def self.section_heading(heading, size = 70)
-      brace_open = green("[ ")
-      brace_close = green(" ]")
-      line = line(size - heading.length-4, '-')
+      brace_open = green('[ ')
+      brace_close = green(' ]')
+      line = line(size - heading.length - 4, '-')
 
       # It is important that you set the colour after you have calculated the size
       "#{brace_open}#{heading}#{brace_close}#{green(line)}"
