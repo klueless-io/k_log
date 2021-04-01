@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'logger'
+require 'table_print'
 require 'k_log/version'
 require 'k_log/log_formatter'
 require 'k_log/log_helper'
