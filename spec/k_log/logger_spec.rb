@@ -2,14 +2,9 @@
 
 require 'spec_helper'
 
-KLog.logger = Logger.new($stdout)
-KLog.logger.level = Logger::DEBUG
-KLog.logger.formatter = KLog::LogFormatter.new
-
-L = KLog::LogUtil.new(KLog.logger)
-
 RSpec.describe 'Logger' do
   it do
+    require 'k_log'
     KLog::LogUtil.examples
   end
 end
