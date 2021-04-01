@@ -100,8 +100,8 @@ module KLog
 
     # # :sql_array should be an array with SQL and values or with SQL and Hash
     # # example:
-    # #   L.sql(["name = :name and group_id = :value OR parent_id = :value", name: "foo'bar", value: 4])
-    # #   L.sql([sql_exact_match_skills_in_use, {names: self.segments_container.segment_values}])
+    # #   KLog.logger.sql(["name = :name and group_id = :value OR parent_id = :value", name: "foo'bar", value: 4])
+    # #   KLog.logger.sql([sql_exact_match_skills_in_use, {names: self.segments_container.segment_values}])
     # def sql(sql_array)
     #   value = ActiveRecord::Base.send(:sanitize_sql_array, sql_array)
 
@@ -136,12 +136,12 @@ module KLog
         case value
         when OpenStruct
           if value['rows'].is_a?(Array)
-            # L.subheading(key)
+            # KLog.logger.subheading(key)
             opts[:subheading] = key
             open_struct(value, indent, **opts)
             opts.delete(:subheading)
           else
-            L.kv "#{indent}#{key}", ''
+            KLog.logger.kv "#{indent}#{key}", ''
             indent = "#{indent}  "
             open_struct(value, indent, **opts)
             indent = indent.chomp('  ')
@@ -153,13 +153,13 @@ module KLog
 
           if value.length.positive?
             if value.first.is_a?(String)
-              L.kv "#{indent}#{key}", value.join(', ')
+              KLog.logger.kv "#{indent}#{key}", value.join(', ')
             else
               tp value, value.first.to_h.keys
             end
           end
         else
-          L.kv "#{indent}#{key}", value
+          KLog.logger.kv "#{indent}#{key}", value
         end
       end
       nil
@@ -244,43 +244,43 @@ module KLog
     end
 
     def self.examples_simple
-      L.debug 'some debug message'
-      L.info 'some info message'
-      L.warn 'some warning message'
-      L.error 'some error message'
-      L.fatal 'some fatal message'
+      KLog.logger.debug 'some debug message'
+      KLog.logger.info 'some info message'
+      KLog.logger.warn 'some warning message'
+      KLog.logger.error 'some error message'
+      KLog.logger.fatal 'some fatal message'
 
-      L.kv('First Name', 'David')
-      L.kv('Last Name', 'Cruwys')
-      L.kv('Age', 45)
-      L.kv('Sex', 'male')
+      KLog.logger.kv('First Name', 'David')
+      KLog.logger.kv('Last Name', 'Cruwys')
+      KLog.logger.kv('Age', 45)
+      KLog.logger.kv('Sex', 'male')
 
-      L.heading('Heading')
-      L.subheading('Sub Heading')
-      L.section_heading('Section Heading')
+      KLog.logger.heading('Heading')
+      KLog.logger.subheading('Sub Heading')
+      KLog.logger.section_heading('Section Heading')
     end
 
     def self.examples_complex
-      L.block ['Line 1', 12, 'Line 3', true, 'Line 5']
+      KLog.logger.block ['Line 1', 12, 'Line 3', true, 'Line 5']
 
-      L.progress(0, 'Section 1')
-      L.progress
-      L.progress
-      save_progress = L.progress
+      KLog.logger.progress(0, 'Section 1')
+      KLog.logger.progress
+      KLog.logger.progress
+      save_progress = KLog.logger.progress
 
-      L.progress(10, 'Section 2')
-      L.progress
-      L.progress
-      L.progress
+      KLog.logger.progress(10, 'Section 2')
+      KLog.logger.progress
+      KLog.logger.progress
+      KLog.logger.progress
 
-      L.progress(save_progress, 'Section 1')
-      L.progress
-      L.progress
-      L.progress
+      KLog.logger.progress(save_progress, 'Section 1')
+      KLog.logger.progress
+      KLog.logger.progress
+      KLog.logger.progress
 
-      L.line
-      L.line(20)
-      L.line(20, character: '-')
+      KLog.logger.line
+      KLog.logger.line(20)
+      KLog.logger.line(20, character: '-')
 
       yaml1 = {}
       yaml1['title'] = 'Software Architect'
@@ -292,28 +292,28 @@ module KLog
       yaml3['age'] = 20
       yaml3['name'] = 'Jin'
 
-      L.yaml(yaml1)
+      KLog.logger.yaml(yaml1)
 
       yaml2 = OpenStruct.new
       yaml2.title = 'Software Architect'
       yaml2.age = 45
       yaml2.name = 'David'
 
-      L.yaml(yaml2)
+      KLog.logger.yaml(yaml2)
 
       mixed_yaml_array = [yaml1, yaml2]
 
       # This fails because we don't correctly pre-process the array
-      L.yaml(mixed_yaml_array)
+      KLog.logger.yaml(mixed_yaml_array)
 
       hash_yaml_array = [yaml1, yaml3]
 
-      L.yaml(hash_yaml_array)
+      KLog.logger.yaml(hash_yaml_array)
 
       begin
         raise 'Here is an error'
       rescue StandardError => e
-        L.exception(e)
+        KLog.logger.exception(e)
       end
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
