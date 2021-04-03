@@ -233,6 +233,27 @@ module KLog
       end
     end
 
+    def visual_compare_hashes(hash1, hash2)
+      content1 = JSON.pretty_generate(hash1)
+      content2 = JSON.pretty_generate(hash2)
+
+      file1 = Tempfile.new('hash1')
+      file1.write(content1)
+      file1.close
+
+      file2 = Tempfile.new('hash2')
+      file2.write(content2)
+      file2.close
+
+      system "code --diff #{file1.path} #{file2.path}"
+
+      # Provide enough time for vscode to open and display the files before deleting them
+      sleep 1
+
+      file1.unlink
+      file2.unlink
+    end
+
     #----------------------------------------------------------------------------------------------------
     # Internal Methods
     #----------------------------------------------------------------------------------------------------
