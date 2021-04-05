@@ -44,6 +44,9 @@ Layout/LineLength:
 Lint/UnusedMethodArgument:
   AllowUnusedKeywordArguments: true
 
+Style/Documentation:
+  Enabled: false
+
 Style/BlockComments:
   Enabled: false
   Include:
