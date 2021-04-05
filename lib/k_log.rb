@@ -6,6 +6,7 @@ require 'k_log/version'
 require 'k_log/log_formatter'
 require 'k_log/log_helper'
 require 'k_log/log_util'
+require 'k_log/logging'
 
 # Simple console log helpers
 module KLog
