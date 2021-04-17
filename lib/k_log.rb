@@ -35,5 +35,5 @@ if ENV['KLUE_DEBUG']&.to_s&.downcase == 'true'
   namespace = 'KLog::Version'
   file_path = $LOADED_FEATURES.find { |f| f.include?('k_log/version') }
   version   = KLog::VERSION.ljust(9)
-  puts "#{namespace.ljust(40)} : #{version.ljust(9)} : #{file_path}"
+  puts "#{namespace.ljust(35)} : #{version.ljust(9)} : #{file_path}"
 end
