@@ -50,6 +50,7 @@ module KLog
     #----------------------------------------------------------------------------------------------------
 
     # Write a Key/Value Pair
+    # Need to change this to named_param
     def kv(key, value, key_width = 30)
       message = LogHelper.kv(key, value, key_width)
       @logger.info(message)
@@ -205,6 +206,12 @@ module KLog
       line
     end
     # rubocop:enable Metrics/AbcSize
+
+    def kv_hash(hash)
+      hash.each do |key, value|
+        kv(key, value)
+      end
+    end
 
     # NOTE: using  pretty_inspect is an existing namespace conflict
     def pretty_params(params)
