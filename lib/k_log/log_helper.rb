@@ -89,7 +89,7 @@ module KLog
 
       unless title.nil?
         result.push(title)
-        result.push(line(70, ','))
+        result.push(line(70, '-'))
       end
 
       result.push messages if messages.is_a?(String) || messages.is_a?(Integer)
