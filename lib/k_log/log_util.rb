@@ -133,6 +133,10 @@ module KLog
 
     # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/AbcSize
     def open_struct(data, indent = '', **opts)
+      KLog.logger.heading(opts[:heading], 88) unless opts[:heading].nil?
+      KLog.logger.subheading(opts[:subheading], 88) unless opts[:subheading].nil?
+      KLog.logger.section_heading(opts[:section_heading], 88) unless opts[:section_heading].nil?
+
       data.each_pair do |key, value|
         case value
         when OpenStruct
@@ -153,8 +157,8 @@ module KLog
           puts LogHelper.section_heading(opts[:subheading], 88) unless opts[:subheading].nil?
 
           if value.length.positive?
-            if value.first.is_a?(String)
-              KLog.logger.kv "#{indent}#{key}", value.join(', ')
+            if value.first.is_a?(String) || value.first.is_a?(Symbol)
+              KLog.logger.kv "#{indent}#{key}", value.map(&:to_s).join(', ')
             else
               tp value, value.first.to_h.keys
             end

@@ -25,6 +25,15 @@ module KLog
       log.heading('Heading')
       log.subheading('Sub Heading')
       log.section_heading('Section Heading')
+
+      data = OpenStruct.new
+      data.title = 'Software Architect'
+      data.age = 45
+      data.name = 'David'
+      data.names = %w[David Bill]
+      data.status = :debug
+      data.statuses = %i[debug info blah]
+      log.open_struct(data, section_heading: 'Display Open Struct')
     end
 
     def examples_complex
