@@ -52,6 +52,9 @@ Style/BlockComments:
   Include:
     - "**/spec/*"
 
+Layout/EndOfLine:
+  EnforcedStyle: lf
+  
 # My Preferences - Start
 Metrics/ClassLength:
   Enabled: false

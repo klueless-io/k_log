@@ -22,9 +22,9 @@ RSpec.describe KLog::Examples do
     it { log.kv_hash(data) }
   end
 
-  # it 'simple examples' do
-  #   instance.examples_simple
-  # end
+  it 'simple examples' do
+    instance.examples_simple
+  end
 
   # it 'complex examples' do
   #   instance.examples_complex
