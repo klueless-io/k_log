@@ -93,11 +93,7 @@ module KLog
 
     def log_child_data(value)
       depth_down
-      update_indent_label
-      # indent_in
       log_data(value)
-      update_indent_label
-      # indent_out
       depth_up
     end
 
@@ -153,9 +149,11 @@ module KLog
 
     def depth_down
       @recursion_depth = recursion_depth + 1
+      update_indent_label
     end
 
     def depth_up
+      update_indent_label
       @recursion_depth = recursion_depth - 1
     end
 
