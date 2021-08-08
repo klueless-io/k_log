@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   # spec.extensions    = ['ext/k_log/extconf.rb']
 
+  spec.add_dependency 'k_util', '~> 0'
   spec.add_dependency 'table_print', '~> 1.5.7'
   # spec.add_dependency 'tty-box',         '~> 0.5.0'
 end

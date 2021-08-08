@@ -5,6 +5,7 @@ require 'table_print'
 require 'k_log/version'
 require 'k_log/log_formatter'
 require 'k_log/log_helper'
+require 'k_log/log_structure'
 require 'k_log/log_util'
 require 'k_log/logging'
 

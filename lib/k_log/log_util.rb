@@ -72,6 +72,12 @@ module KLog
       @logger.info(message)
     end
 
+    def dynamic_heading(heading, size: 70, type: :heading)
+      KLog.logger.heading(heading, size)          if type == :heading
+      KLog.logger.subheading(heading, size)       if type == :subheading
+      KLog.logger.section_heading(heading, size)  if type == :section_heading
+    end
+
     def heading(heading, size = 70)
       lines = LogHelper.heading(heading, size)
       info_multi_lines(lines)
@@ -131,7 +137,23 @@ module KLog
     end
     alias j json
 
+    # Log a structure
+    #
+    # Can handle Hash, Array, OpenStruct, Struct, DryStruct, Hash convertible custom classes
+    #
+    # @param [Hash] **opts Options
+    # @option opts [String] :indent Indent with string, defaults to ''
+    # @option opts [String] :depth is a computered
+    # @option opts [String] :heading Log title using logger.dynamic_heading
+    # @option opts [String] :heading_type :heading, :subheading, :section_heading
+    # @option opts [Boolean] :skip_array Arrays items can be skipped
+    def structure(data, **opts)
+      structure = LogStructure.new(**opts)
+      structure.log(data)
+    end
+
     # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/AbcSize
+    # DEPRECATE
     def open_struct(data, indent = '', **opts)
       KLog.logger.heading(opts[:heading], 88) unless opts[:heading].nil?
       KLog.logger.subheading(opts[:subheading], 88) unless opts[:subheading].nil?
