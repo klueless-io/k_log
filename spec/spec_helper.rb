@@ -2,6 +2,8 @@
 
 require 'pry'
 require 'bundler/setup'
+require 'rspec/collection_matchers'
+require 'support/use_temp_folder'
 require 'k_log'
 # require 'k_usecases'
 
