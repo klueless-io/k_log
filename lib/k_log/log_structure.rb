@@ -44,7 +44,7 @@ module KLog
       puts ':heading_type should be :title_type' if opts[:heading_type]
 
       @formatter        = opts[:formatter] || {}
-      @graph            = GraphCache.new(opts[:graph] || {})
+      @graph            = KUtil.data.to_open_struct(opts[:graph] || {})
       @convert_data_to  = opts[:convert_data_to] || :raw # by default leave data as is
 
       @line_width       = opts[:line_width] || 80
@@ -107,7 +107,7 @@ module KLog
         key = k.is_a?(String) ? k.to_sym : k
 
         graph_path.push(key)
-        @graph_node = graph.for_path(graph_path)
+        @graph_node = GraphNode.for(graph, graph_path)
         # l.kv 'key', "#{key.to_s.ljust(15)}#{graph_node.skip?.to_s.ljust(6)}#{@recursion_depth}"
 
         if graph_node.skip?
@@ -328,10 +328,25 @@ module KLog
     class GraphNode
       attr_accessor :config
 
-      # def self.for(graph, graph_path)
-      #   null = OpenStruct.new
-      #   new(node_config)
-      # end
+      class << self
+        def null
+          @null ||= OpenStruct.new
+        end
+
+        def for(graph, graph_path)
+          # node_config = graph_path.inject(graph, :send) # (uses deep nesting, but fails when nil is returned) https://stackoverflow.com/questions/15862455/ruby-nested-send
+          # node.nil? ? null : node.send(name) || null
+          node_config = graph_path.reduce(graph) do |node, name|
+            result = node.send(name)
+      
+            break null if result.nil?
+
+            result
+          end
+
+          new(node_config)
+        end
+      end
 
       def initialize(config)
         @config = config || OpenStruct.new
