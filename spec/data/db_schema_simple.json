@@ -1,0 +1,58 @@
+{
+  "rails": 4,
+  "complex": {
+    "some": "data",
+    "some_more": "data",
+    "extra": {
+      "extra_info": "info",
+      "more_info": "and more",
+      "names": [
+        "david",
+        "was",
+        "here"
+      ],
+      "ages": [
+        23,
+        53,
+        64
+      ],
+      "more_people": [{
+          "age": 45,
+          "first_name": "bob",
+          "last_name": "jane"
+        },
+        {
+          "age": 25,
+          "first_name": "sam",
+          "last_name": "sugar"
+        }
+      ]
+    },
+    "other_info": "other"
+  },
+  "people": [{
+      "first_name": "david",
+      "last_name": "cruwys",
+      "age": 45,
+      "active": true
+    },
+    {
+      "first_name": "joh",
+      "last_name": "doe",
+      "age": 38,
+      "active": true
+    },
+    {
+      "first_name": "lisa",
+      "last_name": "lou",
+      "age": 23,
+      "active": true
+    },
+    {
+      "first_name": "amanda",
+      "last_name": "armor",
+      "age": 29,
+      "active": false
+    }
+  ]
+}

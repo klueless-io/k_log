@@ -43,6 +43,14 @@ module KLog
       green(character * size)
     end
 
+    def self.dynamic_heading(heading, size: 70, type: :heading)
+      return heading(heading, size)           if type == :heading
+      return subheading(heading, size)        if type == :subheading
+      return [section_heading(heading, size)] if %i[section_heading section].include?(type)
+
+      []
+    end
+
     def self.heading(heading, size = 70)
       line = line(size)
 
@@ -69,7 +77,8 @@ module KLog
     def self.section_heading(heading, size = 70)
       brace_open = green('[ ')
       brace_close = green(' ]')
-      line = line(size - heading.length - 4, '-')
+      line_length = size - heading.length - 4
+      line = line_length.positive? ? line(line_length, '-') : ''
 
       # It is important that you set the colour after you have calculated the size
       "#{brace_open}#{heading}#{brace_close}#{green(line)}"

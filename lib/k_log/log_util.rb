@@ -75,7 +75,7 @@ module KLog
     def dynamic_heading(heading, size: 70, type: :heading)
       KLog.logger.heading(heading, size)          if type == :heading
       KLog.logger.subheading(heading, size)       if type == :subheading
-      KLog.logger.section_heading(heading, size)  if type == :section_heading
+      KLog.logger.section_heading(heading, size)  if %i[section_heading section].include?(type)
     end
 
     def heading(heading, size = 70)
