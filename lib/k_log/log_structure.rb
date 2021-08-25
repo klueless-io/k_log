@@ -34,22 +34,22 @@ module KLog
     # @option opts [String] :line_width line width defaults to 80, but can be overridden here
     # @option opts [String] :formatter is a complex configuration for formatting different data within the structure
     def initialize(opts)
-      @indent           = opts[:indent] || '  '
+      @indent           = opts[:indent]             || '  '
       @title            = opts[:title]
-      @title_type       = opts[:title_type] || :heading
+      @title_type       = opts[:title_type]         || :heading
 
       @heading          = opts[:heading]
-      @heading_type     = opts[:heading_type] || :heading
-      puts ':heading should be :title' if opts[:heading]
-      puts ':heading_type should be :title_type' if opts[:heading_type]
+      @heading_type     = opts[:heading_type]       || :heading
+      puts ':heading should be :title'              if opts[:heading]
+      puts ':heading_type should be :title_type'    if opts[:heading_type]
 
-      @formatter        = opts[:formatter] || {}
-      @graph            = KUtil.data.to_open_struct(opts[:graph] || {})
-      @convert_data_to  = opts[:convert_data_to] || :raw # by default leave data as is
+      @formatter        = opts[:formatter]          || {}
+      @graph            = parse_graph(opts[:graph]  || {})
+      @convert_data_to  = opts[:convert_data_to]    || :raw # by default leave data as is
 
-      @line_width       = opts[:line_width] || 80
-      @output_as        = opts[:output_as] || [:console]
-      @output_as        = [@output_as] unless @output_as.is_a?(Array)
+      @line_width       = opts[:line_width]         || 80
+      @output_as        = opts[:output_as]          || [:console]
+      @output_as        = [@output_as]              unless @output_as.is_a?(Array)
       @output_file      = opts[:output_file]
 
       @recursion_depth  = 0
@@ -156,12 +156,12 @@ module KLog
 
     # rubocop:disable Metrics/AbcSize
     def log_array(key, array)
-      return unless array.length.positive?
+      # return if items.length.zero? && graph_node.skip_empty?
 
       items = array.clone
       items.select! { |item| graph_node.filter(item) }  if graph_node.filter?
       items = items.take(graph_node.take)               if graph_node.limited?
-      items.sort!(&graph_node.sort) if graph_node.sort?
+      items.sort!(&graph_node.sort)                     if graph_node.sort?
 
       return if items.length.zero? && graph_node.skip_empty?
 
@@ -176,7 +176,7 @@ module KLog
       # binding
     end
     # rubocop:enable Metrics/AbcSize
-
+    
     def table_print(items, columns)
       io = TablePrintIo.new(self)
 
@@ -239,6 +239,39 @@ module KLog
       data
     end
 
+    def parse_graph(data)
+      if data.is_a?(Hash)
+        transform_hash = data.each_with_object({}) do |(key, value), new_hash|
+          if key == :columns && value.is_a?(Array)
+            # Don't transform the table_print GEM columns definition as it must stay as a hash
+            new_hash[key] = value
+          else
+            new_hash[key] = parse_graph(value)
+          end
+        end
+        
+        return OpenStruct.new(transform_hash.to_h)
+      end
+
+      return data.map { |o| parse_graph(o) }                               if data.is_a?(Array)
+      return parse_graph(data.to_h)                                        if data.respond_to?(:to_h) # hash_convertible?(data)
+
+      # Some primitave type: String, True/False or an ObjectStruct
+      data
+    end
+
+    # def hash_convertible?(value)
+    #   # Nil is a special case, it responds to :to_h but generally
+    #   # you only want to convert nil to {} in specific scenarios
+    #   return false if value.nil?
+
+    #   value.is_a?(Array) ||
+    #     value.is_a?(Hash) ||
+    #     value.is_a?(Struct) ||
+    #     value.is_a?(OpenStruct) ||
+    #     value.respond_to?(:to_h)
+    # end
+
     # Format configuration for a specific key
     #
     # @example Example configuration for key: tables
@@ -269,59 +302,6 @@ module KLog
 
       def puts(line)
         @log_structure.add_line(line)
-      end
-    end
-
-    class GraphCache
-      # Stores the main graph config
-      attr_accessor :graph
-
-      # Stores a hash lookup for each config node based on hierarchial key
-      attr_reader :cache
-
-      attr_reader :null
-
-      def initialize(graph)
-        @graph  = KUtil.data.to_open_struct(graph)
-        @cache  = {}
-        @null   = OpenStruct.new # (some_note: 'I am null')
-      end
-
-      def l
-        @l ||= KLog::LogUtil.new(KLog.logger)
-      end
-
-      def for_path(graph_path)
-        # l.kv 'graph_path', graph_path
-        lookup = graph_path.join('_')
-        # l.kv 'lookup', lookup
-        result = @cache[lookup]
-
-        if result
-          puts "Found in cache: #{lookup}"
-          # This has never happened, do I need the complexity of a cache?
-          # binding
-        end
-
-        return result if result
-
-        # node_config = graph_path.inject(graph, :send) # (uses deep nesting, but fails when nil is returned) https://stackoverflow.com/questions/15862455/ruby-nested-send
-        # node.nil? ? null : node.send(name) || null
-        node_config = graph_path.reduce(graph) do |node, name|
-          # break null if node.nil?
-
-          # l.kv 'name', name
-          result = node.send(name)
-          # l.kv 'result', (result.nil? ? 'NULL' : result)
-
-          break null if result.nil?
-
-          result
-        end
-
-        @cache[lookup] = GraphNode.new(node_config)
-
-        # GraphNode.for(@graph, graph_path)
       end
     end
 
