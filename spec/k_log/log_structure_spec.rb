@@ -7,7 +7,6 @@ require 'spec_helper'
 require 'k_log/examples'
 require 'json'
 
-# Cleanup the cache
 # Formatting columns
 # Printing NON open_struct objects and having access to custom methods
 # Transform array items (instead of full transform), is this needed
@@ -154,7 +153,7 @@ RSpec.describe KLog::LogStructure do
       end
     end
 
-    context 'when graph->(array data) [take, filter, no_data]' do
+    context 'when graph->(array data) [take, filter, sort, no_data, columns]' do
       subject { instance.clean_lines }
 
       before { instance.log(data) }
@@ -287,6 +286,39 @@ RSpec.describe KLog::LogStructure do
         context 'take: 0 with heading' do
           let(:people) { { take: 0, heading: 'show people', skip_empty: true } }
           it { is_expected.to have(1).items }
+        end
+      end
+
+      context 'columns' do
+        subject { instance.clean_lines[2..5] }
+        context 'select specific columns' do
+          let(:people) { { columns: [:active, :first_name, :last_name] } }
+          it do
+            is_expected.to eq([
+              'true   | david      | cruwys   ',
+              'true   | joh        | doe      ',
+              'true   | lisa       | lou      ',
+              'false  | amanda     | armor    '
+            ])
+          end
+        end
+        context 'select using custom display_method' do
+          let(:people) do
+            {
+              columns: [
+                { full_name: { display_method: ->(row) { "#{row['first_name']} #{row['last_name']}" } } }
+              ]
+            }
+          end
+          # fcontext { it_behaves_like(:write_file) }
+          it do
+            is_expected.to eq([
+              'david cruwys',
+              'joh doe     ',
+              'lisa lou    ',
+              'amanda armor'
+            ])
+          end
         end
       end
     end
