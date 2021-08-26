@@ -34,12 +34,12 @@ module KLog
     # @option opts [String] :line_width line width defaults to 80, but can be overridden here
     # @option opts [String] :formatter is a complex configuration for formatting different data within the structure
     def initialize(opts)
-      @indent           = opts[:indent]             || '  '
+      @indent           = opts[:indent] || '  '
       @title            = opts[:title]
-      @title_type       = opts[:title_type]         || :heading
+      @title_type       = opts[:title_type] || :heading
 
       @heading          = opts[:heading]
-      @heading_type     = opts[:heading_type]       || :heading
+      @heading_type     = opts[:heading_type] || :heading
       puts ':heading should be :title'              if opts[:heading]
       puts ':heading_type should be :title_type'    if opts[:heading_type]
 
@@ -173,10 +173,10 @@ module KLog
         table_print items, tp_columns(items)
       end
     rescue StandardError => e
-      # binding
+      #binding
     end
     # rubocop:enable Metrics/AbcSize
-    
+
     def table_print(items, columns)
       io = TablePrintIo.new(self)
 
@@ -242,14 +242,14 @@ module KLog
     def parse_graph(data)
       if data.is_a?(Hash)
         transform_hash = data.each_with_object({}) do |(key, value), new_hash|
-          if key == :columns && value.is_a?(Array)
+          new_hash[key] = if key == :columns && value.is_a?(Array)
             # Don't transform the table_print GEM columns definition as it must stay as a hash
-            new_hash[key] = value
-          else
-            new_hash[key] = parse_graph(value)
-          end
+                            value
+                          else
+            parse_graph(value)
+                          end
         end
-        
+
         return OpenStruct.new(transform_hash.to_h)
       end
 
@@ -318,7 +318,7 @@ module KLog
           # node.nil? ? null : node.send(name) || null
           node_config = graph_path.reduce(graph) do |node, name|
             result = node.send(name)
-      
+
             break null if result.nil?
 
             result

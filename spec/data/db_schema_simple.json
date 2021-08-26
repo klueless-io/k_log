@@ -34,25 +34,50 @@
       "first_name": "david",
       "last_name": "cruwys",
       "age": 45,
-      "active": true
+      "active": true,
+      "children": [{ 
+        "name": "Steven",
+        "gender": "Male",
+        "age": 21,
+        "hobbies": ["football", "play station"]
+        }]
     },
     {
       "first_name": "joh",
       "last_name": "doe",
       "age": 38,
-      "active": true
+      "active": true,
+      "children": [{ 
+        "name": "Alison",
+        "gender": "Female",
+        "age": 17,
+        "hobbies": ["basketball", "theatre", "dance"]
+        }]
     },
     {
       "first_name": "lisa",
       "last_name": "lou",
       "age": 23,
-      "active": true
+      "active": true,
+      "children": []
     },
     {
       "first_name": "amanda",
       "last_name": "armor",
       "age": 29,
-      "active": false
+      "active": false,
+      "children": [
+        { 
+          "name": "Fiona",
+          "gender": "Female",
+          "age": 7,
+          "hobbies": ["dance", "music"] },
+        { 
+          "name": "Sam",
+          "gender": "Male",
+          "age": 2,
+          "hobbies": []
+        }]
     }
   ]
 }
