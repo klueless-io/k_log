@@ -172,7 +172,7 @@ module KLog
       else
         table_print items, tp_columns(items)
       end
-    rescue StandardError => e
+    rescue StandardError
       #binding
     end
     # rubocop:enable Metrics/AbcSize
