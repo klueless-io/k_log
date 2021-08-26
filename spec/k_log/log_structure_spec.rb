@@ -7,7 +7,7 @@ require 'spec_helper'
 require 'k_log/examples'
 require 'json'
 
-# Formatting columns
+# { first_5_column_names: { width: 150, display_method: ->(row) { row.columns.take(5).map(&:name).join(', ') } } }
 # Printing NON open_struct objects and having access to custom methods
 # Transform array items (instead of full transform), is this needed
 # Handle data namespace/option namespace conflicts
@@ -157,6 +157,7 @@ RSpec.describe KLog::LogStructure do
       subject { instance.clean_lines }
 
       before { instance.log(data) }
+      let(:convert_data_to) { :open_struct }
 
       let(:graph) do
         {
@@ -174,8 +175,171 @@ RSpec.describe KLog::LogStructure do
 
         context 'take: :all' do
           let(:people) { { take: :all } }
-          let(:output) { :console }
           it { is_expected.to have(7).items }
+        end
+      end
+
+      context 'columns' do
+        subject { instance.clean_lines[0..-2] }
+        context 'show specific columns' do
+          let(:people) { { columns: %i[active first_name last_name] } }
+          it do
+            is_expected.to eq([
+                                'ACTIVE | FIRST_NAME | LAST_NAME',
+                                '-------|------------|----------',
+                                'true   | david      | cruwys   ',
+                                'true   | joh        | doe      ',
+                                'true   | lisa       | lou      ',
+                                'false  | amanda     | armor    '
+                              ])
+          end
+        end
+
+        context 'show using custom display_method' do
+          let(:people) do
+            {
+              columns: [
+                { full_name: { display_method: ->(row) { "#{row.first_name} #{row.last_name}" } } },
+                # Note: you cannot use display_name and display_method together
+                # It would be nice to have display_name: '# of Children'
+                { child_count: { display_method: ->(row) { row['children'].length } } }
+              ]
+            }
+          end
+
+          it do
+            is_expected.to eq([
+                                'FULL_NAME    | CHILD_COUNT',
+                                '-------------|------------',
+                                'david cruwys | 1          ',
+                                'joh doe      | 1          ',
+                                'lisa lou     | 0          ',
+                                'amanda armor | 2          '
+                              ])
+          end
+        end
+
+        context 'show using custom display_name (title)' do
+          let(:people) do
+            {
+              columns: [
+                { first_name: { display_name: 'Name' } }
+              ]
+            }
+          end
+
+          it do
+            is_expected.to eq([
+                                'NAME  ',
+                                '------',
+                                'david ',
+                                'joh   ',
+                                'lisa  ',
+                                'amanda'
+                              ])
+          end
+        end
+
+        context 'show using child columns' do
+          let(:people) do
+            {
+              columns: [
+                :first_name,
+                "children.name",
+                "children.age"
+              ]
+            }
+          end
+
+          it do
+            is_expected.to eq([
+                                'FIRST_NAME | CHILDREN.NAME | CHILDREN.AGE',
+                                '-----------|---------------|-------------',
+                                'david      | Steven        | 21          ',
+                                'joh        | Alison        | 17          ',
+                                'lisa       |               |             ',
+                                'amanda     | Fiona         | 7           ',
+                                '           | Sam           | 2           '
+                              ])
+          end
+        end
+
+        context 'show using display_method for child values' do
+          let(:people) do
+            {
+              columns: [
+                :first_name,
+                { children: { display_method: -> (row) { row.children.map { |c| "#{c.name} (#{c.gender[0]})" }.join(', ') } } }
+              ]
+            }
+          end
+          
+          it do
+            is_expected.to eq([
+                                'FIRST_NAME | CHILDREN          ',
+                                '-----------|-------------------',
+                                'david      | Steven (M)        ',
+                                'joh        | Alison (F)        ',
+                                'lisa       |                   ',
+                                'amanda     | Fiona (F), Sam (M)'
+                              ])
+          end
+        end
+
+        context 'show using deep nested child columns' do
+          let(:people) do
+            {
+              columns: [
+                :first_name,
+                "children.name",
+                "children.age",
+                "children.hobbies.to_s"
+              ]
+            }
+          end
+
+          
+          # { hobbies: { display_method: ->(row) { row.hobbies.join(', ') } } },
+          # { first_5_column_names: { width: 150, display_method: ->(row) { row.columns.take(5).map(&:name).join(', ') } } }
+
+          it do
+            is_expected.to eq([
+              'FIRST_NAME | CHILDREN.NAME | CHILDREN.AGE | CHILDREN.HOBBIES.TO_S',
+              '-----------|---------------|--------------|----------------------',
+              'david      | Steven        | 21           | football             ',
+              '           |               |              | play station         ',
+              'joh        | Alison        | 17           | basketball           ',
+              '           |               |              | theatre              ',
+              '           |               |              | dance                ',
+              'lisa       |               |              |                      ',
+              'amanda     | Fiona         | 7            | dance                ',
+              '           |               |              | music                ',
+              '           | Sam           | 2            |                      '
+            ])
+
+          end
+        end
+
+        context 'show using convert to hash with wide column' do
+          let(:people) do
+            {
+              columns: [
+                :first_name,
+                { data: { width: 250, display_method: ->(row) { KUtil.data.to_hash(row) } } }
+              ]
+            }
+          end
+
+          it do
+            is_expected.to eq([
+              'FIRST_NAME | DATA                                                                                                                                                                                                                   ',
+              '-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------',
+              'david      | {:first_name=>"david", :last_name=>"cruwys", :age=>45, :active=>true, :children=>[{:name=>"Steven", :gender=>"Male", :age=>21, :hobbies=>["football", "play station"]}]}                                               ',
+              'joh        | {:first_name=>"joh", :last_name=>"doe", :age=>38, :active=>true, :children=>[{:name=>"Alison", :gender=>"Female", :age=>17, :hobbies=>["basketball", "theatre", "dance"]}]}                                            ',
+              'lisa       | {:first_name=>"lisa", :last_name=>"lou", :age=>23, :active=>true, :children=>[]}                                                                                                                                       ',
+              'amanda     | {:first_name=>"amanda", :last_name=>"armor", :age=>29, :active=>false, :children=>[{:name=>"Fiona", :gender=>"Female", :age=>7, :hobbies=>["dance", "music"]}, {:name=>"Sam", :gender=>"Male", :age=>2, :hobbies=>[]}]}',
+            ])
+          end
         end
       end
 
@@ -219,10 +383,13 @@ RSpec.describe KLog::LogStructure do
       context 'sort' do
         subject { instance.clean_lines[2..5] }
 
-        let(:convert_data_to) { :open_struct }
-
         context 'sort: active (asc), age(asc)' do
-          let(:people) { { sort: ->(a, b) { [a.active.to_s, a.age] <=> [b.active.to_s, b.age] } } }
+          let(:people) do
+            {
+              columns: %i[first_name last_name age active],
+              sort: ->(a, b) { [a.active.to_s, a.age] <=> [b.active.to_s, b.age] } 
+            }
+          end
 
           it do
             is_expected.to eq([
@@ -235,7 +402,12 @@ RSpec.describe KLog::LogStructure do
         end
 
         context 'sort: active (asc), age(desc)' do
-          let(:people) { { sort: ->(a, b) { [a.active.to_s, b.age] <=> [b.active.to_s, a.age] } } }
+          let(:people) do
+            {
+              columns: %i[first_name last_name age active],
+              sort: ->(a, b) { [a.active.to_s, b.age] <=> [b.active.to_s, a.age] }
+            }
+          end
 
           it do
             is_expected.to eq([
@@ -248,7 +420,12 @@ RSpec.describe KLog::LogStructure do
         end
 
         context 'sort: active (desc), age(asc)' do
-          let(:people) { { sort: ->(a, b) { [b.active.to_s, a.age] <=> [a.active.to_s, b.age] } } }
+          let(:people) do
+            {
+              columns: %i[first_name last_name age active],
+              sort: ->(a, b) { [b.active.to_s, a.age] <=> [a.active.to_s, b.age] }
+            }
+          end
 
           it do
             is_expected.to eq([
@@ -261,7 +438,12 @@ RSpec.describe KLog::LogStructure do
         end
 
         context 'sort: active (desc), age(desc)' do
-          let(:people) { { sort: ->(a, b) { [b.active.to_s, b.age] <=> [a.active.to_s, a.age] } } }
+          let(:people) do
+            {
+              columns: %i[first_name last_name age active],
+              sort: ->(a, b) { [b.active.to_s, b.age] <=> [a.active.to_s, a.age] }
+            }
+          end
 
           it do
             is_expected.to eq([
@@ -286,39 +468,6 @@ RSpec.describe KLog::LogStructure do
         context 'take: 0 with heading' do
           let(:people) { { take: 0, heading: 'show people', skip_empty: true } }
           it { is_expected.to have(1).items }
-        end
-      end
-
-      context 'columns' do
-        subject { instance.clean_lines[2..5] }
-        context 'select specific columns' do
-          let(:people) { { columns: [:active, :first_name, :last_name] } }
-          it do
-            is_expected.to eq([
-              'true   | david      | cruwys   ',
-              'true   | joh        | doe      ',
-              'true   | lisa       | lou      ',
-              'false  | amanda     | armor    '
-            ])
-          end
-        end
-        context 'select using custom display_method' do
-          let(:people) do
-            {
-              columns: [
-                { full_name: { display_method: ->(row) { "#{row['first_name']} #{row['last_name']}" } } }
-              ]
-            }
-          end
-          # fcontext { it_behaves_like(:write_file) }
-          it do
-            is_expected.to eq([
-              'david cruwys',
-              'joh doe     ',
-              'lisa lou    ',
-              'amanda armor'
-            ])
-          end
         end
       end
     end
@@ -562,63 +711,4 @@ RSpec.describe KLog::LogStructure do
 
     sleep sleep_for
   end
-
-  # describe 'examples' do
-  #   context 'when using custom column formatters in tabular printouts' do
-  #     let(:take_limit) { 0 }
-  #     let(:opts) do
-  #       {
-  #         heading: 'PostgreSQL Database Schema for Rails Application',
-  #         line_width: 180,
-  #         formatter: {
-  #           tables: {
-  #             heading: 'Database Tables',
-  #             take: :all,
-  #             array_columns: [
-  #               :name,
-  #               :force,
-  #               :primary_key,
-  #               :id,
-  #               { index_count: { display_method: ->(row) { row.indexes.length } } },
-  #               { column_count: { display_method: ->(row) { row.columns.length } } },
-  #               { first_5_column_names: { width: 150, display_method: ->(row) { row.columns.take(5).map(&:name).join(', ') } } }
-  #             ]
-  #           },
-  #           foreign_keys: {
-  #             heading: 'PostgreSQL - All foreign leys',
-  #             take: 5
-  #           },
-  #           all_indexes: {
-  #             heading: 'PostgreSQL - All indexes',
-  #             take: 5,
-  #             array_columns: [
-  #               :name,
-  #               { fields: { width: 150, display_method: ->(row) { row.fields.join(', ') } } },
-  #               :using,
-  #               { order: { width: 100, display_method: ->(row) { row.order.to_h } } },
-  #               { where: { display_method: ->(row) { row[:where] } } },
-  #               { unique: { display_method: ->(row) { row[:unique] } } }
-  #             ]
-  #           },
-  #           keys: {
-  #             heading: 'Title for Keys',
-  #             take: 20,
-  #             array_columns: [
-  #               :type,
-  #               :category,
-  #               :key,
-  #               { keys: { width: 100, display_method: ->(row) { row.keys.join(', ') } } }
-  #             ]
-  #           },
-  #           people: {
-  #             heading: 'List of people',
-  #             array_columns: [
-  #               :first_name,
-  #               :last_name,
-  #               { full_name: { width: 100, display_method: ->(row) { "#{row.first_name} #{row.last_name}" } } }
-  #             ]
-  #           }
-  #         }
-  #       }
-  #     end
 end
