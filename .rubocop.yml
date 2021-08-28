@@ -40,6 +40,8 @@ Layout/LineLength:
   # Ignores annotate output
   IgnoredPatterns: ['\A# \*\*']
   IgnoreCopDirectives: true
+  Exclude:
+    - "**/spec/**/*"
 
 Lint/UnusedMethodArgument:
   AllowUnusedKeywordArguments: true
@@ -61,6 +63,16 @@ Metrics/ClassLength:
 Metrics/ModuleLength:
   Exclude:
     - "**/spec/**/*"
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - "lib/k_log/log_structure.rb"
+Metrics/PerceivedComplexity:
+  Exclude:
+    - "lib/k_log/log_structure.rb"
+Metrics/AbcSize:
+  Exclude:
+    - "lib/k_log/log_structure.rb"
+
 Naming/MemoizedInstanceVariableName:
   Enabled: false
 Naming/VariableNumber:

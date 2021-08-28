@@ -2,17 +2,11 @@
 
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in handlebars_helpers.gemspec
 gemspec
 
-# group :development do
-#   # Currently conflicts with GitHub actions and so I remove it on push
-#   # pry on steroids
-#   gem 'jazz_fingers'
-#   gem 'pry-coolline', github: 'owst/pry-coolline', branch: 'support_new_pry_config_api'
-# end
-
 group :development, :test do
+  gem 'dry-struct', '~> 1'
+
   gem 'guard-bundler'
   gem 'guard-rspec'
   gem 'guard-rubocop'
