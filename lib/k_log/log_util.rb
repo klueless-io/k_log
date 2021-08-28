@@ -198,8 +198,9 @@ module KLog
     def exception(exception)
       line
 
-      @logger.info(exception.message)
-      @logger.info(exception.backtrace.join("\n"))
+      @logger.info(KLog::LogHelper.bg_red(exception.message))
+
+      @logger.info(KLog::LogHelper.yellow(exception.backtrace.map { |row| row.start_with?(Dir.pwd) ? KLog::LogHelper.yellow(row) : KLog::LogHelper.red(row) }.join("\n")))
 
       line
     end

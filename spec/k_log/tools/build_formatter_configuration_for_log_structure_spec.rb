@@ -10,13 +10,13 @@ RSpec.describe KLog::Tools::BuildFormatterConfigurationForLogStructure do
   let(:json) { File.read(file) }
   let(:data) { JSON.parse(json) }
 
-  describe 'examples' do
-    subject { instance.build_sample_config(data) }
+  # describe 'examples' do
+  #   subject { instance.build_sample_config(data) }
 
-    let(:file) { 'spec/data/db_schema.json' }
+  #   let(:file) { 'spec/data/db_schema.json' }
 
-    it 'print configuration' do
-      subject
-    end
-  end
+  #   it 'print configuration' do
+  #     subject
+  #   end
+  # end
 end

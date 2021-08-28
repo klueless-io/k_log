@@ -115,8 +115,60 @@ module KLog
     end
     # rubocop:enable Metrics/CyclomaticComplexity
 
+    def self.red(value)
+      "\033[31m#{value}\033[0m"
+    end
+
     def self.green(value)
       "\033[32m#{value}\033[0m"
+    end
+
+    def self.yellow(value)
+      "\033[33m#{value}\033[0m"
+    end
+
+    def self.blue(value)
+      "\033[34m#{value}\033[0m"
+    end
+
+    def self.purple(value)
+      "\033[35m#{value}\033[0m"
+    end
+
+    def self.cyan(value)
+      "\033[36m#{value}\033[0m"
+    end
+
+    def self.grey(value)
+      "\033[37m#{value}\033[0m"
+    end
+
+    def self.bg_red(value)
+      "\033[41m#{value}\033[0m"
+    end
+
+    def self.bg_green(value)
+      "\033[42m#{value}\033[0m"
+    end
+
+    def self.bg_yellow(value)
+      "\033[43m#{value}\033[0m"
+    end
+
+    def self.bg_blue(value)
+      "\033[44m#{value}\033[0m"
+    end
+
+    def self.bg_purple(value)
+      "\033[45m#{value}\033[0m"
+    end
+
+    def self.bg_cyan(value)
+      "\033[46m#{value}\033[0m"
+    end
+
+    def self.bg_grey(value)
+      "\033[47m#{value}\033[0m"
     end
   end
 end

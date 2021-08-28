@@ -154,7 +154,6 @@ module KLog
       depth_up
     end
 
-    # rubocop:disable Metrics/AbcSize
     def log_array(key, array)
       # return if items.length.zero? && graph_node.skip_empty?
 
@@ -173,9 +172,8 @@ module KLog
         table_print items, tp_columns(items)
       end
     rescue StandardError
-      #binding
+      # binding
     end
-    # rubocop:enable Metrics/AbcSize
 
     def table_print(items, columns)
       io = TablePrintIo.new(self)
@@ -243,10 +241,10 @@ module KLog
       if data.is_a?(Hash)
         transform_hash = data.each_with_object({}) do |(key, value), new_hash|
           new_hash[key] = if key == :columns && value.is_a?(Array)
-            # Don't transform the table_print GEM columns definition as it must stay as a hash
+                            # Don't transform the table_print GEM columns definition as it must stay as a hash
                             value
                           else
-            parse_graph(value)
+                            parse_graph(value)
                           end
         end
 
