@@ -5,6 +5,12 @@ require 'bundler/setup'
 require 'rspec/collection_matchers'
 require 'support/use_temp_folder'
 require 'k_log'
+require 'dry-struct'
+
+module Types
+  include Dry.Types()
+end
+
 # require 'k_usecases'
 
 RSpec.configure do |config|
