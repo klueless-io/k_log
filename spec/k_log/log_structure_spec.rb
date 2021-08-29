@@ -29,8 +29,8 @@ RSpec.describe KLog::LogStructure do
   let(:output_filename) { 'a1.txt' }
   let(:output_file) { File.join(output_folder, output_filename) }
 
-  let(:convert_data_to) { nil } # defaults to :raw     - valid values [:raw, :open_struct]
-  # let(:output_as) { :file }           # defaults to :console - valid values [:console, :file, :none]
+  let(:convert_data_to) { nil }       # defaults to :raw     - valid values [:raw, :open_struct]
+  # let(:output_as) { :file }         # defaults to :console - valid values [:console, :file, :none]
   let(:output_as) { nil }             # defaults to :console - valid values [:console, :file, :none]
   let(:line_width) { nil }            # defaults to 80
   let(:indent) { nil }                # defaults to '  '
@@ -58,8 +58,135 @@ RSpec.describe KLog::LogStructure do
 
   shared_examples :write_file do |vscode_open = false|
     let(:output_folder) { '/Users/davidcruwys/dev/kgems/k_log/spec/k_log' }
+    let(:output_as) { [:file] }
 
     it { vscode_open ? vs(instance) : instance }
+  end
+
+  # context 'when :convert_data_to' do
+  #   subject { instance.clean_content }
+
+  #   before { instance.log(data) }
+
+  #   context 'is :raw (default)' do
+  #     it do
+  #       is_expected
+  #         .to   include('rails                         : 4')
+  #         .and  include('{"some"=>"data", "some_more"=>"data", "extra"=>{"extra_info"=>"info", "more_info"=>"and more", "names"=>["david", "was", "here"], "ages"=>[23, 53, 64], "more_people"=>[{"age"=>45, "first_name"=>"bob", "last_name"=>"jane"}, {"age"=>25, "first_name"=>"sam", "last_name"=>"sugar"}]}, "other_info"=>"other"}')
+  #     end
+  #   end
+
+  #   context 'is :open_struct' do
+  #     let(:convert_data_to) { :open_struct }
+
+  #     it do
+  #       is_expected
+  #         .to   include('rails                         : 4')
+  #         .and  include('    ages                      : 23, 53, 64')
+  #         .and  include('    extra_info                : info')
+  #         .and  include('45  | bob        | jane     ')
+  #         .and  include('david      | cruwys    | 45  | true  ')
+  #     end
+  #   end
+  # end
+
+
+  describe 'DATA SHAPES' do
+    # before { instance.log(data) }
+
+    context 'using different input data types' do
+      let(:raw_input) { KUtil.data.deep_symbolize_keys(data) }
+
+      context 'standard data transform is consistent' do
+        subject { KUtil.data.deep_symbolize_keys(KUtil.data.to_hash(input)) }
+
+        let(:expected_output) { raw_input }
+
+        context 'when input is hash -> hash(:symbolized)' do
+          let(:input) { raw_input }
+          it { is_expected.to eq(expected_output) }
+        end
+
+        context 'when input is OpenStruct -> hash(:symbolized)' do
+          let(:input) { KUtil.data.to_open_struct(raw_input) }
+          it { is_expected.to eq(expected_output) }
+        end
+
+        context 'when input is ComplexStructure::Root -> hash(:symbolized)' do
+          let(:input) { ComplexStructure::Root.new(raw_input) }
+          it { is_expected.to eq(expected_output) }
+        end
+      end
+
+      context 'standard log output is consistent' do
+        subject { instance.clean_lines }
+
+        before { instance.log(input) }
+
+        context 'when input is hash -> hash(:symbolized)' do
+          let(:expected_output) {
+            [
+              'rails                         : 4',
+              'complex                       : {:some=>"data", :some_more=>"data", :extra=>{:extra_info=>"info", :more_info=>"and more", :names=>["david", "was", "here"], :ages=>[23, 53, 64], :more_people=>[{:age=>45, :first_name=>"bob", :last_name=>"jane"}, {:age=>25, :first_name=>"sam", :last_name=>"sugar"}]}, :other_info=>"other"}',
+              'FIRST_NAME | LAST_NAME | AGE | ACTIVE | CHILDREN                      ',
+              '-----------|-----------|-----|--------|-------------------------------',
+              'david      | cruwys    | 45  | true   | [{:name=>"Steven", :gender=...',
+              'joh        | doe       | 38  | true   | [{:name=>"Alison", :gender=...',
+              'lisa       | lou       | 23  | true   | []                            ',
+              'amanda     | armor     | 29  | false  | [{:name=>"Fiona", :gender=>...',
+              '================================================================================'
+            ]
+          }
+          context 'when data is hash and convert_data_to: :raw' do
+            let(:input) { raw_input }
+            it { is_expected.to eq(expected_output) }
+          end
+        end
+
+        context 'when input is OpenStruct -> hash(:symbolized)' do
+          let(:expected_output) {
+            [
+              'rails                         : 4',
+              'complex',
+              '  some                        : data',
+              '  some_more                   : data',
+              '  extra',
+              '    extra_info                : info',
+              '    more_info                 : and more',
+              '    names                     : david, was, here',
+              '    ages                      : 23, 53, 64',
+              'AGE | FIRST_NAME | LAST_NAME',
+              '----|------------|----------',
+              '45  | bob        | jane     ',
+              '25  | sam        | sugar    ',
+              '  other_info                  : other',
+              'FIRST_NAME | LAST_NAME | AGE | ACTIVE | CHILDREN                      ',
+              '-----------|-----------|-----|--------|-------------------------------',
+              'david      | cruwys    | 45  | true   | [#<OpenStruct name="Steven"...',
+              'joh        | doe       | 38  | true   | [#<OpenStruct name="Alison"...',
+              'lisa       | lou       | 23  | true   | []                            ',
+              'amanda     | armor     | 29  | false  | [#<OpenStruct name="Fiona",...',
+              '================================================================================'
+            ]
+          }
+          context 'when data is OpenStruct and convert_data_to: :raw' do
+            let(:input) { KUtil.data.to_open_struct(raw_input) }
+            it { is_expected.to eq(expected_output) }
+          end
+          context 'when data is hash and convert_data_to: :open_struct' do
+            let(:input) { KUtil.data.to_open_struct(raw_input) }
+            it { is_expected.to eq(expected_output) }
+          end
+        end
+
+        # context 'when input is ComplexStructure::Root -> hash(:symbolized)' do
+        #   let(:input) { ComplexStructure::Root.new(raw_input) }
+        #   # let(:convert_data_to) { :open_struct }
+        #   # fcontext { it_behaves_like(:write_file) }
+        #   it { is_expected.to eq(expected_output) }
+        # end
+      end
+    end
   end
 
   context 'when :line_width' do
@@ -532,7 +659,6 @@ RSpec.describe KLog::LogStructure do
             }
           }
         end
-        context { it_behaves_like(:write_file) }
         it do
           is_expected
             .to   include('[ Complex Heading (:section) ]--------------------')
@@ -722,10 +848,11 @@ RSpec.describe KLog::LogStructure do
   def vs(log_structure, sleep_for: 2)
     return if log_structure.nil?
 
-    if log_structure.output_file.nil?
-      puts 'Following options are needed to open file in VSCode'
-      puts 'output_as: :file'
-      puts 'output_file: output_file'
+    if !log_structure.output_as.include?(:file) || log_structure.output_file.nil?
+      
+      KLog.logger.error  'Following options are needed to open file in VSCode'
+      KLog.logger.kv 'output_as', log_structure.output_as
+      KLog.logger.kv 'output_file', log_structure.output_file
 
       return
     end
