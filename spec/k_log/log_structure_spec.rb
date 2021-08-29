@@ -5,6 +5,7 @@
 
 require 'spec_helper'
 require 'k_log/examples'
+require 'complex_structure/root'
 require 'json'
 
 # { first_5_column_names: { width: 150, display_method: ->(row) { row.columns.take(5).map(&:name).join(', ') } } }
@@ -15,15 +16,19 @@ require 'json'
 # Improve colorization
 
 RSpec.describe KLog::LogStructure do
-  subject { instance.log(data) }
-
   let(:instance) { described_class.new(**opts) }
   # let(:data) { File.rea }
   let(:input_folder) { 'spec/data' }
   let(:input_filename) { 'complex_structure.json' }
   let(:input_file) { File.join(input_folder, input_filename) }
   let(:json) { File.read(input_file) }
-  let(:data) { JSON.parse(json) }
+
+  let(:hash) { JSON.parse(json) }
+  let(:hash_as_sym) { KUtil.data.deep_symbolize_keys(hash) }
+  let(:hash_as_open_struct) { KUtil.data.to_open_struct(hash) }
+  let(:hash_as_model) { ComplexStructure::Root.new(hash_as_sym) }
+
+  let(:input) { hash }
 
   let(:output_folder) { '/Users/davidcruwys/dev/kgems/k_log/spec/k_log' }
   let(:output_filename) { 'a1.txt' }
@@ -63,65 +68,39 @@ RSpec.describe KLog::LogStructure do
     it { vscode_open ? vs(instance) : instance }
   end
 
-  # context 'when :convert_data_to' do
-  #   subject { instance.clean_content }
-
-  #   before { instance.log(data) }
-
-  #   context 'is :raw (default)' do
-  #     it do
-  #       is_expected
-  #         .to   include('rails                         : 4')
-  #         .and  include('{"some"=>"data", "some_more"=>"data", "extra"=>{"extra_info"=>"info", "more_info"=>"and more", "names"=>["david", "was", "here"], "ages"=>[23, 53, 64], "more_people"=>[{"age"=>45, "first_name"=>"bob", "last_name"=>"jane"}, {"age"=>25, "first_name"=>"sam", "last_name"=>"sugar"}]}, "other_info"=>"other"}')
-  #     end
-  #   end
-
-  #   context 'is :open_struct' do
-  #     let(:convert_data_to) { :open_struct }
-
-  #     it do
-  #       is_expected
-  #         .to   include('rails                         : 4')
-  #         .and  include('    ages                      : 23, 53, 64')
-  #         .and  include('    extra_info                : info')
-  #         .and  include('45  | bob        | jane     ')
-  #         .and  include('david      | cruwys    | 45  | true  ')
-  #     end
-  #   end
-  # end
-
-
   describe 'DATA SHAPES' do
-    # before { instance.log(data) }
+    before { instance.log(input) }
 
-    context 'using different input data types' do
-      let(:raw_input) { KUtil.data.deep_symbolize_keys(data) }
+    context 'when trying different input data types' do
+      context 'the data transformation is consistent' do
+        subject { hash_as_sym }
 
-      context 'standard data transform is consistent' do
-        subject { KUtil.data.deep_symbolize_keys(KUtil.data.to_hash(input)) }
-
-        let(:expected_output) { raw_input }
+        let(:expected_output) { hash_as_sym }
 
         context 'when input is hash -> hash(:symbolized)' do
-          let(:input) { raw_input }
+          let(:input) { hash_as_sym }
           it { is_expected.to eq(expected_output) }
         end
 
         context 'when input is OpenStruct -> hash(:symbolized)' do
-          let(:input) { KUtil.data.to_open_struct(raw_input) }
+          let(:input) { hash_as_open_struct }
           it { is_expected.to eq(expected_output) }
         end
 
         context 'when input is ComplexStructure::Root -> hash(:symbolized)' do
-          let(:input) { ComplexStructure::Root.new(raw_input) }
+          let(:input) { hash_as_model }
           it { is_expected.to eq(expected_output) }
         end
       end
 
-      context 'standard log output is consistent' do
+      # It would be better if this was NOT the case
+      # for this to become consistent, I would need to:
+      #   alter hashes to structures
+      #   alter open_struct to structures in arrays
+      #   alter dry_struct to structures in arrays
+      # I'm not sure if this is achievable without side effect
+      context 'the log output is different' do
         subject { instance.clean_lines }
-
-        before { instance.log(input) }
 
         context 'when input is hash -> hash(:symbolized)' do
           let(:expected_output) {
@@ -138,7 +117,7 @@ RSpec.describe KLog::LogStructure do
             ]
           }
           context 'when data is hash and convert_data_to: :raw' do
-            let(:input) { raw_input }
+            let(:input) { hash_as_sym }
             it { is_expected.to eq(expected_output) }
           end
         end
@@ -170,21 +149,45 @@ RSpec.describe KLog::LogStructure do
             ]
           }
           context 'when data is OpenStruct and convert_data_to: :raw' do
-            let(:input) { KUtil.data.to_open_struct(raw_input) }
+            let(:input) { hash_as_open_struct }
             it { is_expected.to eq(expected_output) }
           end
           context 'when data is hash and convert_data_to: :open_struct' do
-            let(:input) { KUtil.data.to_open_struct(raw_input) }
+            let(:input) { hash }
+            let(:convert_data_to) { :open_struct }
             it { is_expected.to eq(expected_output) }
           end
         end
 
-        # context 'when input is ComplexStructure::Root -> hash(:symbolized)' do
-        #   let(:input) { ComplexStructure::Root.new(raw_input) }
-        #   # let(:convert_data_to) { :open_struct }
-        #   # fcontext { it_behaves_like(:write_file) }
-        #   it { is_expected.to eq(expected_output) }
-        # end
+        context 'when input is ComplexStructure::Root -> hash(:symbolized)' do
+          let(:input) { hash_as_model }
+          let(:expected_output) {
+            [
+              'rails                         : 4',
+              'complex',
+              '  some                        : data',
+              '  some_more                   : data',
+              '  extra',
+              '    extra_info                : info',
+              '    more_info                 : and more',
+              '    names                     : david, was, here',
+              '    ages                      : 23, 53, 64',
+              'AGE | FIRST_NAME | LAST_NAME',
+              '----|------------|----------',
+              '45  | bob        | jane     ',
+              '25  | sam        | sugar    ',
+              '  other_info                  : other',
+              'AGE | FIRST_NAME | LAST_NAME | ACTIVE | CHILDREN                      ',
+              '----|------------|-----------|--------|-------------------------------',
+              '45  | david      | cruwys    | true   | [#<ComplexStructure::Childr...',
+              '38  | joh        | doe       | true   | [#<ComplexStructure::Childr...',
+              '23  | lisa       | lou       | true   | []                            ',
+              '29  | amanda     | armor     | false  | [#<ComplexStructure::Childr...',
+              '================================================================================'
+            ]
+          }
+          it { is_expected.to eq(expected_output) }
+        end
       end
     end
   end
@@ -192,7 +195,7 @@ RSpec.describe KLog::LogStructure do
   context 'when :line_width' do
     subject { instance.clean_lines.last }
 
-    before { instance.log(data) }
+    before { instance.log(input) }
 
     context 'is 80 (default)' do
       it { is_expected.to eq('=' * 80) }
@@ -208,7 +211,7 @@ RSpec.describe KLog::LogStructure do
   context 'when :indent' do
     subject { [instance.clean_lines[2], instance.clean_lines[5]] }
 
-    before { instance.log(data) }
+    before { instance.log(input) }
 
     context 'convert hash to nested open struct just so this test works' do
       let(:convert_data_to) { :open_struct }
@@ -238,7 +241,7 @@ RSpec.describe KLog::LogStructure do
   context 'when :title' do
     subject { instance.clean_lines }
 
-    before { instance.log(data) }
+    before { instance.log(input) }
 
     let(:line_width) { 20 }
     let(:line_equals) { '=' * line_width }
@@ -279,7 +282,7 @@ RSpec.describe KLog::LogStructure do
   context 'when graph->(array data) [take, filter, sort, no_data, columns]' do
     subject { instance.clean_lines }
 
-    before { instance.log(data) }
+    before { instance.log(input) }
     let(:convert_data_to) { :open_struct }
 
     let(:graph) do
@@ -594,7 +597,7 @@ RSpec.describe KLog::LogStructure do
   end
 
   context 'when graph->(:heading, :heading_type)' do
-    before { instance.log(data) }
+    before { instance.log(input) }
 
     let(:convert_data_to) { :open_struct }
     let(:line_width) { 50 }
@@ -673,7 +676,7 @@ RSpec.describe KLog::LogStructure do
   context 'when :convert_data_to' do
     subject { instance.clean_content }
 
-    before { instance.log(data) }
+    before { instance.log(input) }
 
     context 'is :raw (default)' do
       it do
@@ -700,7 +703,7 @@ RSpec.describe KLog::LogStructure do
   context 'when graph' do
     subject { instance.clean_content }
 
-    before { instance.log(data) }
+    before { instance.log(input) }
 
     context 'when convert_data_to: :open_struct' do
       let(:convert_data_to) { :open_struct }
@@ -810,10 +813,7 @@ RSpec.describe KLog::LogStructure do
   end
 
   describe 'complex->*.rb - custom dry classes' do
-    require 'complex_structure/root'
-
-    let(:symbolized) { KUtil.data.deep_symbolize_keys(data) }
-    let(:model) { ComplexStructure::Root.new(symbolized) }
+    let(:model) { hash_as_model }
 
     it do
       expect(model.rails).to eq(4)

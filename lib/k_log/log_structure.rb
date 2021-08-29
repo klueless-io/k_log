@@ -102,8 +102,13 @@ module KLog
 
     # format_config = @formatter[:_root] if format_config.nil? && @recursion_depth.zero?
 
+    def data_enumerator(data)
+      return data.attributes if data.respond_to?(:attributes)
+      data
+    end
+
     def log_data(data)
-      data.each_pair do |k, v|
+      data_enumerator(data).each_pair do |k, v|
         key = k.is_a?(String) ? k.to_sym : k
 
         graph_path.push(key)
@@ -118,12 +123,13 @@ module KLog
 
         value = graph_node.transform? ? graph_node.transform(v) : v
 
-        case value
-        when OpenStruct
+        case
+        when value.is_a?(OpenStruct) || value.respond_to?(:attributes)
+
           # l.kv 'go', 'open struct ->'
           log_structure(key, value)
           # l.kv 'go', 'open struct <-'
-        when Array
+        when value.is_a?(Array)
           # l.kv 'go', 'array ->'
           log_array(key, value)
           # l.kv 'go', 'array <-'
@@ -228,6 +234,7 @@ module KLog
     def render_output
       puts content                            if output_as.include?(:console)
       File.write(output_file, clean_content)  if output_as.include?(:file) && output_file
+      content
     end
 
     # convert_data_to: :open_struct

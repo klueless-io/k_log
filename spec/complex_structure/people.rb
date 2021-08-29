@@ -7,5 +7,9 @@ module ComplexStructure
     attribute :last_name  , Types::Strict::String
     attribute :active     , Types::Strict::Bool
     attribute :children   , Types::Strict::Array.of(ComplexStructure::Children)
+
+    def full_name
+      "@#{first_name} @#{last_name}"
+    end
   end
 end
