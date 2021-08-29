@@ -172,7 +172,7 @@ module KLog
         table_print items, tp_columns(items)
       end
     rescue StandardError
-      # binding
+      #
     end
 
     def table_print(items, columns)
