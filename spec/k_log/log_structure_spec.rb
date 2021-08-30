@@ -28,7 +28,7 @@ RSpec.describe KLog::LogStructure do
   let(:hash_as_open_struct) { KUtil.data.to_open_struct(hash) }
   let(:hash_as_model) { ComplexStructure::Root.new(hash_as_sym) }
 
-  let(:input) { hash }
+  let(:input) { hash_as_sym }
 
   let(:output_folder) { '/Users/davidcruwys/dev/kgems/k_log/spec/k_log' }
   let(:output_filename) { 'a1.txt' }
@@ -283,7 +283,6 @@ RSpec.describe KLog::LogStructure do
     subject { instance.clean_lines }
 
     before { instance.log(input) }
-    let(:convert_data_to) { :open_struct }
 
     let(:graph) do
       {
@@ -322,26 +321,51 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'show using custom display_method' do
-        let(:people) do
-          {
-            columns: [
-              { full_name: { display_method: ->(row) { "#{row.first_name} #{row.last_name}" } } },
-              # NOTE: you cannot use display_name and display_method together
-              # It would be nice to have display_name: '# of Children'
-              { child_count: { display_method: ->(row) { row['children'].length } } }
-            ]
-          }
+        context 'when input is open_struct' do
+          let(:input) { hash_as_open_struct }
+          let(:people) do
+            {
+              columns: [
+                { full_name: { display_method: ->(row) { "#{row.first_name} #{row.last_name}" } } },
+                # NOTE: you cannot use display_name and display_method together
+                # It would be nice to have display_name: '# of Children'
+                { child_count: { display_method: ->(row) { row.children.length } } }
+              ]
+            }
+          end
+          it do
+            is_expected.to eq([
+                                'FULL_NAME    | CHILD_COUNT',
+                                '-------------|------------',
+                                'david cruwys | 1          ',
+                                'joh doe      | 1          ',
+                                'lisa lou     | 0          ',
+                                'amanda armor | 2          '
+                              ])
+          end
         end
 
-        it do
-          is_expected.to eq([
-                              'FULL_NAME    | CHILD_COUNT',
-                              '-------------|------------',
-                              'david cruwys | 1          ',
-                              'joh doe      | 1          ',
-                              'lisa lou     | 0          ',
-                              'amanda armor | 2          '
-                            ])
+        context 'when input is custom model' do
+          let(:input) { hash_as_model }
+          let(:people) do
+            {
+              columns: [
+                { full_name: { display_method: ->(row) { row.full_name } } },
+                { child_count: { display_method: ->(row) { row.child_count } } }
+              ]
+            }
+          end
+
+          it do
+            is_expected.to eq([
+                                'FULL_NAME    | CHILD_COUNT',
+                                '-------------|------------',
+                                'david cruwys | 1 children ',
+                                'joh doe      | 1 children ',
+                                'lisa lou     | 0 children ',
+                                'amanda armor | 2 children '
+                              ])
+          end
         end
       end
 
@@ -367,6 +391,7 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'show using child columns' do
+        let(:convert_data_to) { :open_struct }
         let(:people) do
           {
             columns: [
@@ -376,7 +401,6 @@ RSpec.describe KLog::LogStructure do
             ]
           }
         end
-
         it do
           is_expected.to eq([
                               'FIRST_NAME | CHILDREN.NAME | CHILDREN.AGE',
@@ -391,6 +415,7 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'show using display_method for child values' do
+        let(:convert_data_to) { :open_struct }
         let(:people) do
           {
             columns: [
@@ -413,6 +438,7 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'show using deep nested child columns' do
+        let(:convert_data_to) { :open_struct }
         let(:people) do
           {
             columns: [
@@ -469,6 +495,7 @@ RSpec.describe KLog::LogStructure do
 
     context 'filter' do
       context 'when using raw data' do
+        let(:convert_data_to) { :open_struct }
         context 'filter: active' do
           let(:people) { { filter: ->(row) { row['active'] } } }
           it { is_expected.to have(6).items }
@@ -508,6 +535,7 @@ RSpec.describe KLog::LogStructure do
       subject { instance.clean_lines[2..5] }
 
       context 'sort: active (asc), age(asc)' do
+        let(:convert_data_to) { :open_struct }
         let(:people) do
           {
             columns: %i[first_name last_name age active],
@@ -526,6 +554,7 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'sort: active (asc), age(desc)' do
+        let(:convert_data_to) { :open_struct }
         let(:people) do
           {
             columns: %i[first_name last_name age active],
@@ -544,6 +573,7 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'sort: active (desc), age(asc)' do
+        let(:convert_data_to) { :open_struct }
         let(:people) do
           {
             columns: %i[first_name last_name age active],
@@ -562,6 +592,7 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'sort: active (desc), age(desc)' do
+        let(:convert_data_to) { :open_struct }
         let(:people) do
           {
             columns: %i[first_name last_name age active],
@@ -679,11 +710,25 @@ RSpec.describe KLog::LogStructure do
     before { instance.log(input) }
 
     context 'is :raw (default)' do
+      let(:input) { hash }
+      # let(:convert_data_to) { :open_struct }
+
       it do
         is_expected
           .to   include('rails                         : 4')
           .and  include('{"some"=>"data", "some_more"=>"data", "extra"=>{"extra_info"=>"info", "more_info"=>"and more", "names"=>["david", "was", "here"], "ages"=>[23, 53, 64], "more_people"=>[{"age"=>45, "first_name"=>"bob", "last_name"=>"jane"}, {"age"=>25, "first_name"=>"sam", "last_name"=>"sugar"}]}, "other_info"=>"other"}')
       end
+    end
+
+    context 'is :raw (symbolized hash)' do
+      context { it_behaves_like(:write_file) }
+
+      it do
+        is_expected
+          .to   include('rails                         : 4')
+          .and  include('{:some=>"data", :some_more=>"data", :extra=>{:extra_info=>"info", :more_info=>"and more", :names=>["david", "was", "here"], :ages=>[23, 53, 64], :more_people=>[{:age=>45, :first_name=>"bob", :last_name=>"jane"}, {:age=>25, :first_name=>"sam", :last_name=>"sugar"}]}, :other_info=>"other"}')
+      end
+
     end
 
     context 'is :open_struct' do
@@ -765,6 +810,7 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'without transformer' do
+        let(:input) { hash }
         let(:complex) { nil }
         it do
           is_expected.to include('{"some"=>"data", "some_more"=>"data", "extra"=>{"extra_info"=>"info", "more_info"=>"and more", "names"=>["david", "was", "here"], "ages"=>[23, 53, 64], "more_people"=>[{"age"=>45, "first_name"=>"bob", "last_name"=>"jane"}, {"age"=>25, "first_name"=>"sam", "last_name"=>"sugar"}]}, "other_info"=>"other"}')

@@ -9,7 +9,10 @@ module ComplexStructure
     attribute :children   , Types::Strict::Array.of(ComplexStructure::Children)
 
     def full_name
-      "@#{first_name} @#{last_name}"
+      "#{first_name} #{last_name}"
+    end
+    def child_count
+      "#{children.length} children"
     end
   end
 end
