@@ -1,21 +1,9 @@
 rails                         : 4
-complex
-  some                        : data
-  some_more                   : data
-  extra
-    extra_info                : info
-    more_info                 : and more
-    names                     : david, was, here
-    ages                      : 23, 53, 64
-AGE | FIRST_NAME | LAST_NAME
-----|------------|----------
-45  | bob        | jane     
-25  | sam        | sugar    
-  other_info                  : other
+complex                       : {:some=>"data", :some_more=>"data", :extra=>{:extra_info=>"info", :more_info=>"and more", :names=>["david", "was", "here"], :ages=>[23, 53, 64], :more_people=>[{:age=>45, :first_name=>"bob", :last_name=>"jane"}, {:age=>25, :first_name=>"sam", :last_name=>"sugar"}]}, :other_info=>"other"}
 FIRST_NAME | LAST_NAME | AGE | ACTIVE | CHILDREN                      
 -----------|-----------|-----|--------|-------------------------------
-david      | cruwys    | 45  | true   | [#<OpenStruct name="Steven"...
-joh        | doe       | 38  | true   | [#<OpenStruct name="Alison"...
+david      | cruwys    | 45  | true   | [{:name=>"Steven", :gender=...
+joh        | doe       | 38  | true   | [{:name=>"Alison", :gender=...
 lisa       | lou       | 23  | true   | []                            
-amanda     | armor     | 29  | false  | [#<OpenStruct name="Fiona",...
+amanda     | armor     | 29  | false  | [{:name=>"Fiona", :gender=>...
 ================================================================================
