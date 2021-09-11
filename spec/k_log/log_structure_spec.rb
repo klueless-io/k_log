@@ -2,6 +2,7 @@
 
 # use this to debug any single test by rendering to file name, add [, true] to open in vscode
 # fcontext { it_behaves_like(:write_file) }
+# fcontext { it_behaves_like(:write_file); it { File.write('spec/k_log/a2.txt', expected_output.join("\n")) } }
 
 require 'spec_helper'
 require 'k_log/examples'
@@ -28,19 +29,22 @@ RSpec.describe KLog::LogStructure do
   let(:hash_as_open_struct) { KUtil.data.to_open_struct(hash) }
   let(:hash_as_model) { ComplexStructure::Root.new(hash_as_sym) }
 
-  let(:input) { hash_as_sym }
+  let(:input) { hash }
 
   let(:output_folder) { '/Users/davidcruwys/dev/kgems/k_log/spec/k_log' }
   let(:output_filename) { 'a1.txt' }
   let(:output_file) { File.join(output_folder, output_filename) }
 
-  let(:convert_data_to) { nil }       # defaults to :raw     - valid values [:raw, :open_struct]
-  # let(:output_as) { :file }         # defaults to :console - valid values [:console, :file, :none]
-  let(:output_as) { nil }             # defaults to :console - valid values [:console, :file, :none]
+  let(:convert_data_to) { nil } # defaults to :raw     - valid values [:raw, :open_struct]
+  # let(:output_as) { :file }           # defaults to :console - valid values [:console, :file, :none]
+  # let(:output_as) { nil }             # defaults to :console - valid values [:console, :file, :none]
+  let(:output_as) { [:none] }
   let(:line_width) { nil }            # defaults to 80
+  let(:key_width) { nil }             # defaults to 30
   let(:indent) { nil }                # defaults to '  '
   let(:title) { nil }                 # defaults to nil, is displayed when not nil
   let(:title_type) { nil }            # defaults to :heading - valid values [:heading, :subheading, :section]
+  let(:show_array_count) { nil }      # defaults to nil - valid values: [nil, true, false]
   let(:graph) { nil }
   let(:opts) do
     {
@@ -48,9 +52,11 @@ RSpec.describe KLog::LogStructure do
       output_file: output_file,
       convert_data_to: convert_data_to,
       line_width: line_width,
+      key_width: key_width,
       indent: indent,
       title: title,
       title_type: title_type,
+      show_array_count: show_array_count,
       graph: graph
     }
   end
@@ -103,7 +109,7 @@ RSpec.describe KLog::LogStructure do
         subject { instance.clean_lines }
 
         context 'when input is hash -> hash(:symbolized)' do
-          let(:expected_output) {
+          let(:expected_output) do
             [
               'rails                         : 4',
               'complex                       : {:some=>"data", :some_more=>"data", :extra=>{:extra_info=>"info", :more_info=>"and more", :names=>["david", "was", "here"], :ages=>[23, 53, 64], :more_people=>[{:age=>45, :first_name=>"bob", :last_name=>"jane"}, {:age=>25, :first_name=>"sam", :last_name=>"sugar"}]}, :other_info=>"other"}',
@@ -115,7 +121,7 @@ RSpec.describe KLog::LogStructure do
               'amanda     | armor     | 29  | false  | [{:name=>"Fiona", :gender=>...',
               '================================================================================'
             ]
-          }
+          end
           context 'when data is hash and convert_data_to: :raw' do
             let(:input) { hash_as_sym }
             it { is_expected.to eq(expected_output) }
@@ -123,7 +129,7 @@ RSpec.describe KLog::LogStructure do
         end
 
         context 'when input is OpenStruct -> hash(:symbolized)' do
-          let(:expected_output) {
+          let(:expected_output) do
             [
               'rails                         : 4',
               'complex',
@@ -147,13 +153,12 @@ RSpec.describe KLog::LogStructure do
               'amanda     | armor     | 29  | false  | [#<OpenStruct name="Fiona",...',
               '================================================================================'
             ]
-          }
+          end
           context 'when data is OpenStruct and convert_data_to: :raw' do
             let(:input) { hash_as_open_struct }
             it { is_expected.to eq(expected_output) }
           end
           context 'when data is hash and convert_data_to: :open_struct' do
-            let(:input) { hash }
             let(:convert_data_to) { :open_struct }
             it { is_expected.to eq(expected_output) }
           end
@@ -161,7 +166,7 @@ RSpec.describe KLog::LogStructure do
 
         context 'when input is ComplexStructure::Root -> hash(:symbolized)' do
           let(:input) { hash_as_model }
-          let(:expected_output) {
+          let(:expected_output) do
             [
               'rails                         : 4',
               'complex',
@@ -185,7 +190,7 @@ RSpec.describe KLog::LogStructure do
               '29  | amanda     | armor     | false  | [#<ComplexStructure::Childr...',
               '================================================================================'
             ]
-          }
+          end
           it { is_expected.to eq(expected_output) }
         end
       end
@@ -205,6 +210,22 @@ RSpec.describe KLog::LogStructure do
       let(:line_width) { 20 }
 
       it { is_expected.to eq('=' * 20) }
+    end
+  end
+
+  context 'when :key_width' do
+    subject { instance.clean_lines.first }
+
+    before { instance.log(input) }
+
+    context 'is 30 (default)' do
+      it { is_expected.to eq('rails                         : 4') }
+    end
+
+    context 'is 20' do
+      let(:key_width) { 20 }
+
+      it { is_expected.to eq('rails               : 4') }
     end
   end
 
@@ -236,6 +257,17 @@ RSpec.describe KLog::LogStructure do
         end
       end
     end
+  end
+
+  context 'when :show_array_count' do
+    subject { instance.clean_lines }
+
+    before { instance.log(input) }
+
+    let(:show_array_count) { true } # defaults to nil - valid values: [nil, true, false]
+    let(:input) { hash_as_open_struct }
+
+    it { is_expected.to include('more_people                   : 2', 'people                        : 4') }
   end
 
   context 'when :title' do
@@ -482,12 +514,12 @@ RSpec.describe KLog::LogStructure do
 
         it do
           is_expected.to eq([
-                              'FIRST_NAME | DATA                                                                                                                                                                                                                   ',
-                              '-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------',
-                              'david      | {:first_name=>"david", :last_name=>"cruwys", :age=>45, :active=>true, :children=>[{:name=>"Steven", :gender=>"Male", :age=>21, :hobbies=>["football", "play station"]}]}                                               ',
-                              'joh        | {:first_name=>"joh", :last_name=>"doe", :age=>38, :active=>true, :children=>[{:name=>"Alison", :gender=>"Female", :age=>17, :hobbies=>["basketball", "theatre", "dance"]}]}                                            ',
-                              'lisa       | {:first_name=>"lisa", :last_name=>"lou", :age=>23, :active=>true, :children=>[]}                                                                                                                                       ',
-                              'amanda     | {:first_name=>"amanda", :last_name=>"armor", :age=>29, :active=>false, :children=>[{:name=>"Fiona", :gender=>"Female", :age=>7, :hobbies=>["dance", "music"]}, {:name=>"Sam", :gender=>"Male", :age=>2, :hobbies=>[]}]}'
+                              'FIRST_NAME | DATA                                                                                                                                                                                                                                ',
+                              '-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------',
+                              'david      | {"first_name"=>"david", "last_name"=>"cruwys", "age"=>45, "active"=>true, "children"=>[{"name"=>"Steven", "gender"=>"Male", "age"=>21, "hobbies"=>["football", "play station"]}]}                                                   ',
+                              'joh        | {"first_name"=>"joh", "last_name"=>"doe", "age"=>38, "active"=>true, "children"=>[{"name"=>"Alison", "gender"=>"Female", "age"=>17, "hobbies"=>["basketball", "theatre", "dance"]}]}                                                ',
+                              'lisa       | {"first_name"=>"lisa", "last_name"=>"lou", "age"=>23, "active"=>true, "children"=>[]}                                                                                                                                               ',
+                              'amanda     | {"first_name"=>"amanda", "last_name"=>"armor", "age"=>29, "active"=>false, "children"=>[{"name"=>"Fiona", "gender"=>"Female", "age"=>7, "hobbies"=>["dance", "music"]}, {"name"=>"Sam", "gender"=>"Male", "age"=>2, "hobbies"=>[]}]}'
                             ])
         end
       end
@@ -710,9 +742,6 @@ RSpec.describe KLog::LogStructure do
     before { instance.log(input) }
 
     context 'is :raw (default)' do
-      let(:input) { hash }
-      # let(:convert_data_to) { :open_struct }
-
       it do
         is_expected
           .to   include('rails                         : 4')
@@ -726,9 +755,8 @@ RSpec.describe KLog::LogStructure do
       it do
         is_expected
           .to   include('rails                         : 4')
-          .and  include('{:some=>"data", :some_more=>"data", :extra=>{:extra_info=>"info", :more_info=>"and more", :names=>["david", "was", "here"], :ages=>[23, 53, 64], :more_people=>[{:age=>45, :first_name=>"bob", :last_name=>"jane"}, {:age=>25, :first_name=>"sam", :last_name=>"sugar"}]}, :other_info=>"other"}')
+          .and  include('{"some"=>"data", "some_more"=>"data", "extra"=>{"extra_info"=>"info", "more_info"=>"and more", "names"=>["david", "was", "here"], "ages"=>[23, 53, 64], "more_people"=>[{"age"=>45, "first_name"=>"bob", "last_name"=>"jane"}, {"age"=>25, "first_name"=>"sam", "last_name"=>"sugar"}]}, "other_info"=>"other"}')
       end
-
     end
 
     context 'is :open_struct' do
@@ -810,7 +838,6 @@ RSpec.describe KLog::LogStructure do
       end
 
       context 'without transformer' do
-        let(:input) { hash }
         let(:complex) { nil }
         it do
           is_expected.to include('{"some"=>"data", "some_more"=>"data", "extra"=>{"extra_info"=>"info", "more_info"=>"and more", "names"=>["david", "was", "here"], "ages"=>[23, 53, 64], "more_people"=>[{"age"=>45, "first_name"=>"bob", "last_name"=>"jane"}, {"age"=>25, "first_name"=>"sam", "last_name"=>"sugar"}]}, "other_info"=>"other"}')
@@ -891,12 +918,13 @@ RSpec.describe KLog::LogStructure do
     end
   end
 
+  # rubocop:disable Metrics/AbcSize
   def vs(log_structure, sleep_for: 2)
     return if log_structure.nil?
 
     if !log_structure.output_as.include?(:file) || log_structure.output_file.nil?
-      
-      KLog.logger.error  'Following options are needed to open file in VSCode'
+
+      KLog.logger.error 'Following options are needed to open file in VSCode'
       KLog.logger.kv 'output_as', log_structure.output_as
       KLog.logger.kv 'output_file', log_structure.output_file
 
@@ -913,4 +941,5 @@ RSpec.describe KLog::LogStructure do
 
     sleep sleep_for
   end
+  # rubocop:enable Metrics/AbcSize
 end

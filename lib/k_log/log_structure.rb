@@ -11,6 +11,8 @@ module KLog
     attr_reader :heading
     attr_reader :heading_type
     attr_reader :line_width
+    attr_reader :key_width
+    attr_reader :show_array_count
     attr_reader :graph
     attr_reader :formatter
     attr_reader :convert_data_to
@@ -32,6 +34,7 @@ module KLog
     # @option opts [String] :heading Log heading using logger.dynamic_heading
     # @option opts [String] :heading_type :heading, :subheading, :section_heading
     # @option opts [String] :line_width line width defaults to 80, but can be overridden here
+    # @option opts [String] :key_width key width defaults to 30, but can be overridden here
     # @option opts [String] :formatter is a complex configuration for formatting different data within the structure
     def initialize(opts)
       @indent           = opts[:indent] || '  '
@@ -48,6 +51,8 @@ module KLog
       @convert_data_to  = opts[:convert_data_to]    || :raw # by default leave data as is
 
       @line_width       = opts[:line_width]         || 80
+      @key_width        = opts[:key_width]          || 30
+      @show_array_count = opts[:show_array_count]   || false
       @output_as        = opts[:output_as]          || [:console]
       @output_as        = [@output_as]              unless @output_as.is_a?(Array)
       @output_file      = opts[:output_file]
@@ -104,6 +109,7 @@ module KLog
 
     def data_enumerator(data)
       return data.attributes if data.respond_to?(:attributes)
+
       data
     end
 
@@ -112,7 +118,7 @@ module KLog
         key = k.is_a?(String) ? k.to_sym : k
 
         graph_path.push(key)
-        @graph_node = GraphNode.for(graph, graph_path)
+        @graph_node = GraphNode.for(self, graph, graph_path)
         # l.kv 'key', "#{key.to_s.ljust(15)}#{graph_node.skip?.to_s.ljust(6)}#{@recursion_depth}"
 
         if graph_node.skip?
@@ -121,22 +127,26 @@ module KLog
           next
         end
 
+        'puts xmen' if graph_node.pry_at?(:before_value)
+
         value = graph_node.transform? ? graph_node.transform(v) : v
 
-        case
-        when value.is_a?(OpenStruct) || value.respond_to?(:attributes)
+        'puts xmen' if graph_node.pry_at?(:after_value)
+        if value.is_a?(OpenStruct) || value.respond_to?(:attributes)
 
           # l.kv 'go', 'open struct ->'
+          'puts xmen' if graph_node.pry_at?(:before_structure)
           log_structure(key, value)
           # l.kv 'go', 'open struct <-'
-        when value.is_a?(Array)
+        elsif value.is_a?(Array)
           # l.kv 'go', 'array ->'
           log_array(key, value)
           # l.kv 'go', 'array <-'
         else
           # l.kv 'go', 'value ->'
+          'puts xmen' if graph_node.pry_at?(:before_kv)
           log_heading(graph_node.heading, graph_node.heading_type) if graph_node.heading
-          add_line KLog::LogHelper.kv "#{@indent_label}#{key}", value
+          add_line KLog::LogHelper.kv("#{@indent_label}#{key}", value, key_width)
           # l.kv 'go', 'value <-'
         end
 
@@ -161,12 +171,14 @@ module KLog
     end
 
     def log_array(key, array)
-      # return if items.length.zero? && graph_node.skip_empty?
+      'puts xmen' if graph_node.pry_at?(:before_array)
 
       items = array.clone
       items.select! { |item| graph_node.filter(item) }  if graph_node.filter?
       items = items.take(graph_node.take)               if graph_node.limited?
       items.sort!(&graph_node.sort)                     if graph_node.sort?
+
+      'puts xmen' if graph_node.pry_at?(:before_array_print)
 
       return if items.length.zero? && graph_node.skip_empty?
 
@@ -176,9 +188,12 @@ module KLog
         add_line KLog::LogHelper.kv "#{@indent_label}#{key}", items.map(&:to_s).join(', ')
       else
         table_print items, tp_columns(items)
+
+        # NEED SUPPORT FOR A configured ARRAY COUNT with width and label
+        add_line KLog::LogHelper.kv key.to_s, items.count if show_array_count
       end
-    rescue StandardError
-      #
+    rescue StandardError => e
+      KLog.logger.exception(e)
     end
 
     def table_print(items, columns)
@@ -234,7 +249,7 @@ module KLog
     def render_output
       puts content                            if output_as.include?(:console)
       File.write(output_file, clean_content)  if output_as.include?(:file) && output_file
-      content
+      # content
     end
 
     # convert_data_to: :open_struct
@@ -311,6 +326,7 @@ module KLog
     end
 
     class GraphNode
+      attr_reader   :log_structure
       attr_accessor :config
 
       class << self
@@ -318,7 +334,7 @@ module KLog
           @null ||= OpenStruct.new
         end
 
-        def for(graph, graph_path)
+        def for(log_structure, graph, graph_path)
           # node_config = graph_path.inject(graph, :send) # (uses deep nesting, but fails when nil is returned) https://stackoverflow.com/questions/15862455/ruby-nested-send
           # node.nil? ? null : node.send(name) || null
           node_config = graph_path.reduce(graph) do |node, name|
@@ -329,11 +345,12 @@ module KLog
             result
           end
 
-          new(node_config)
+          new(log_structure, node_config)
         end
       end
 
-      def initialize(config)
+      def initialize(log_structure, config)
+        @log_structure = log_structure
         @config = config || OpenStruct.new
       end
 
@@ -397,9 +414,22 @@ module KLog
         config.skip == true
       end
 
+      # Useful in complex debug scenarios
+      def pry_at
+        config.pry_at || []
+      end
+
+      def pry_at?(section)
+        pry_at.include?(section)
+      end
+
       # Skip empty array node (my be useful for other nodes, but not yet)
       def skip_empty?
         config.skip_empty == true
+      end
+
+      def show_array_count
+        log_structure.show_array_count
       end
     end
   end
