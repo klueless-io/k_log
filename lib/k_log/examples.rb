@@ -91,6 +91,16 @@ module KLog
       rescue StandardError => e
         log.exception(e)
       end
+      begin
+        raise 'Here is an error'
+      rescue StandardError => e
+        log.exception(e, style: :message)
+      end
+      begin
+        raise 'Here is an error'
+      rescue StandardError => e
+        log.exception(e, style: :short)
+      end
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
