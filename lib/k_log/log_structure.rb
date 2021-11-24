@@ -36,6 +36,7 @@ module KLog
     # @option opts [String] :line_width line width defaults to 80, but can be overridden here
     # @option opts [String] :key_width key width defaults to 30, but can be overridden here
     # @option opts [String] :formatter is a complex configuration for formatting different data within the structure
+    # @option opts [Symbol] :convert_data_to (:raw, open_struct)
     def initialize(opts)
       @indent           = opts[:indent] || '  '
       @title            = opts[:title]
@@ -119,6 +120,7 @@ module KLog
 
         graph_path.push(key)
         @graph_node = GraphNode.for(self, graph, graph_path)
+        # @graph_node.debug
         # l.kv 'key', "#{key.to_s.ljust(15)}#{graph_node.skip?.to_s.ljust(6)}#{@recursion_depth}"
 
         if graph_node.skip?
@@ -127,15 +129,15 @@ module KLog
           next
         end
 
-        'puts xmen' if graph_node.pry_at?(:before_value)
+        # xxxx.pry if graph_node.pry_at?(:before_value) # 'puts xmen'
 
         value = graph_node.transform? ? graph_node.transform(v) : v
 
-        'puts xmen' if graph_node.pry_at?(:after_value)
+        # xxxx.pry if graph_node.pry_at?(:after_value) # 'puts xmen'
         if value.is_a?(OpenStruct) || value.respond_to?(:attributes)
 
           # l.kv 'go', 'open struct ->'
-          'puts xmen' if graph_node.pry_at?(:before_structure)
+          # xxxx.pry if graph_node.pry_at?(:before_structure) # 'puts xmen'
           log_structure(key, value)
           # l.kv 'go', 'open struct <-'
         elsif value.is_a?(Array)
@@ -144,7 +146,7 @@ module KLog
           # l.kv 'go', 'array <-'
         else
           # l.kv 'go', 'value ->'
-          'puts xmen' if graph_node.pry_at?(:before_kv)
+          # xxxx.pry if graph_node.pry_at?(:before_kv) # 'puts xmen'
           log_heading(graph_node.heading, graph_node.heading_type) if graph_node.heading
           add_line KLog::LogHelper.kv("#{@indent_label}#{key}", value, key_width)
           # l.kv 'go', 'value <-'
@@ -171,14 +173,14 @@ module KLog
     end
 
     def log_array(key, array)
-      'puts xmen' if graph_node.pry_at?(:before_array)
+      # xxxx.pry if graph_node.pry_at?(:before_array) # 'puts xmen'
 
       items = array.clone
       items.select! { |item| graph_node.filter(item) }  if graph_node.filter?
       items = items.take(graph_node.take)               if graph_node.limited?
       items.sort!(&graph_node.sort)                     if graph_node.sort?
 
-      'puts xmen' if graph_node.pry_at?(:before_array_print)
+      # xxxx.pry if graph_node.pry_at?(:before_array_print) # 'puts xmen'
 
       return if items.length.zero? && graph_node.skip_empty?
 
@@ -344,6 +346,7 @@ module KLog
 
             result
           end
+          # puts node_config
 
           new(log_structure, node_config)
         end
@@ -430,6 +433,21 @@ module KLog
 
       def show_array_count
         log_structure.show_array_count
+      end
+  
+      def debug
+        l = KLog::LogUtil.new(KLog.logger)
+        l.kv('columns', columns) if columns
+        l.kv('heading', heading) if heading
+        l.kv('heading_type', heading_type) if heading_type
+        l.kv('filter?', filter?)
+        l.kv('take', take)
+        l.kv('limited?', limited?)
+        l.kv('sort?', sort?)
+        l.kv('sort', sort)
+        l.kv('skip?', skip?)
+        l.kv('pry_at', pry_at)
+        l.kv('skip_empty?', skip_empty?)
       end
     end
   end

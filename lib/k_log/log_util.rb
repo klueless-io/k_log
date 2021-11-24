@@ -195,12 +195,17 @@ module KLog
     alias ostruct open_struct
     alias o open_struct
 
-    def exception(exception)
+    def exception(exception, short: false, method_info: nil)
       line
 
       @logger.info(KLog::LogHelper.bg_red(exception.message))
 
-      @logger.info(KLog::LogHelper.yellow(exception.backtrace.map { |row| row.start_with?(Dir.pwd) ? KLog::LogHelper.yellow(row) : KLog::LogHelper.red(row) }.join("\n")))
+      @logger.info([method_info.owner.name, method_info.name].join('#')) if method_info
+
+      trace_items = short ? exception.backtrace.select { |row| row.start_with?(Dir.pwd) } : exception.backtrace
+      trace_items = trace_items.map { |row| row.start_with?(Dir.pwd) ? KLog::LogHelper.yellow(row) : KLog::LogHelper.red(row) }
+
+      @logger.info(KLog::LogHelper.yellow(trace_items.join("\n")))
 
       line
     end

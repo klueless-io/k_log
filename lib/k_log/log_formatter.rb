@@ -20,8 +20,10 @@ module KLog
 
       msg = msg.is_a?(String) ? msg : msg.inspect
 
+      # "%<time>s %<severity>s %<message>s\n", {
+
       format(
-        "%<time>s %<severity>s %<message>s\n", {
+        "%<severity>s %<message>s\n", {
           time: Time.now.strftime('%d|%H:%M:%S'),
           severity: severity_value,
           message: msg
