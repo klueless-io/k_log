@@ -148,7 +148,7 @@ module KLog
     # @option opts [String] :heading_type :heading, :subheading, :section_heading
     # @option opts [Boolean] :skip_array Arrays items can be skipped
     def structure(data, **opts)
-      structure = LogStructure.new(opts)
+      structure = LogStructure.new(**opts)
       structure.log(data)
     end
 

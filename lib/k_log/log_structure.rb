@@ -37,7 +37,7 @@ module KLog
     # @option opts [String] :key_width key width defaults to 30, but can be overridden here
     # @option opts [String] :formatter is a complex configuration for formatting different data within the structure
     # @option opts [Symbol] :convert_data_to (:raw, open_struct)
-    def initialize(opts)
+    def initialize(**opts)
       @indent           = opts[:indent] || '  '
       @title            = opts[:title]
       @title_type       = opts[:title_type] || :heading
@@ -71,6 +71,7 @@ module KLog
     end
 
     def log(data)
+      return puts 'log.structure(data) is nil' if data.nil?
       log_heading(title, title_type) if title
 
       data = convert_data(data)
