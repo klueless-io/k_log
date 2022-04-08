@@ -37,7 +37,7 @@ module KLog
     # @option opts [String] :key_width key width defaults to 30, but can be overridden here
     # @option opts [String] :formatter is a complex configuration for formatting different data within the structure
     # @option opts [Symbol] :convert_data_to (:raw, open_struct)
-    def initialize(opts)
+    def initialize(**opts)
       @indent           = opts[:indent] || '  '
       @title            = opts[:title]
       @title_type       = opts[:title_type] || :heading
@@ -71,6 +71,7 @@ module KLog
     end
 
     def log(data)
+      return puts 'log.structure(data) is nil' if data.nil?
       log_heading(title, title_type) if title
 
       data = convert_data(data)
@@ -337,16 +338,14 @@ module KLog
         end
 
         def for(log_structure, graph, graph_path)
-          # node_config = graph_path.inject(graph, :send) # (uses deep nesting, but fails when nil is returned) https://stackoverflow.com/questions/15862455/ruby-nested-send
-          # node.nil? ? null : node.send(name) || null
           node_config = graph_path.reduce(graph) do |node, name|
-            result = node.send(name)
+            # handling the issue where name was :sleep
+            result = node.respond_to?(name) ? node.send(name) : nil
 
             break null if result.nil?
 
             result
           end
-          # puts node_config
 
           new(log_structure, node_config)
         end
