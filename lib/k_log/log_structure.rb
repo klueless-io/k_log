@@ -338,16 +338,14 @@ module KLog
         end
 
         def for(log_structure, graph, graph_path)
-          # node_config = graph_path.inject(graph, :send) # (uses deep nesting, but fails when nil is returned) https://stackoverflow.com/questions/15862455/ruby-nested-send
-          # node.nil? ? null : node.send(name) || null
           node_config = graph_path.reduce(graph) do |node, name|
-            result = node.send(name)
+            # handling the issue where name was :sleep
+            result = node.respond_to?(name) ? node.send(name) : nil
 
             break null if result.nil?
 
             result
           end
-          # puts node_config
 
           new(log_structure, node_config)
         end
