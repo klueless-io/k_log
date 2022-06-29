@@ -41,4 +41,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'k_util', '~> 0'
   spec.add_dependency 'table_print', '~> 1.5.7'
   # spec.add_dependency 'tty-box',         '~> 0.5.0'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 end

@@ -37,7 +37,7 @@ RSpec.describe KLog::LogStructure do
 
   let(:convert_data_to) { nil } # defaults to :raw     - valid values [:raw, :open_struct]
   # let(:output_as) { :file }           # defaults to :console - valid values [:console, :file, :none]
-  let(:output_as) { nil }             # defaults to :console - valid values [:console, :file, :none]
+  let(:output_as) { nil } # defaults to :console - valid values [:console, :file, :none]
   # let(:output_as) { [:none] }
   let(:line_width) { nil }            # defaults to 80
   let(:key_width) { nil }             # defaults to 30
@@ -367,7 +367,7 @@ RSpec.describe KLog::LogStructure do
               ]
             }
           end
-          
+
           it do
             is_expected.to eq([
                                 'FULL_NAME    | CHILD_COUNT',

@@ -32,7 +32,7 @@ end
 
 KLog.logger = KLog.default_logger
 
-if ENV['KLUE_DEBUG']&.to_s&.downcase == 'true'
+if ENV.fetch('KLUE_DEBUG', 'false').downcase == 'true'
   namespace = 'KLog::Version'
   file_path = $LOADED_FEATURES.find { |f| f.include?('k_log/version') }
   version   = KLog::VERSION.ljust(9)

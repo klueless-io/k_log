@@ -206,15 +206,14 @@ module KLog
       @logger.error(KLog::LogHelper.bg_red(exception.message))
       @logger.info([method_info.owner.name, method_info.name].join('#')) if method_info
 
-      case style
-      when :short
-        trace_items = exception.backtrace.select { |row| row.start_with?(Dir.pwd) }
-      when :long
-        trace_items = exception.backtrace
-      else
-        trace_items = []  
-      end
-
+      trace_items = case style
+                    when :short
+                      exception.backtrace.select { |row| row.start_with?(Dir.pwd) }
+                    when :long
+                      exception.backtrace
+                    else
+                      []
+                    end
 
       trace_items = trace_items.map { |row| row.start_with?(Dir.pwd) ? KLog::LogHelper.yellow(row) : KLog::LogHelper.red(row) }
 

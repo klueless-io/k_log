@@ -72,6 +72,7 @@ module KLog
 
     def log(data)
       return puts 'log.structure(data) is nil' if data.nil?
+
       log_heading(title, title_type) if title
 
       data = convert_data(data)
@@ -433,7 +434,7 @@ module KLog
       def show_array_count
         log_structure.show_array_count
       end
-  
+
       def debug
         l = KLog::LogUtil.new(KLog.logger)
         l.kv('columns', columns) if columns
