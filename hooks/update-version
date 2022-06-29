@@ -30,4 +30,4 @@ end
 output.push('')
 
 printf "%-25<label>s : %<version>s\n", label: 'GEM VERSION', version: version
-File.open('lib/k_log/version.rb', 'w+') { |f| f.write(output.join("\n")) }
+File.write('lib/k_log/version.rb', output.join("\n"))
