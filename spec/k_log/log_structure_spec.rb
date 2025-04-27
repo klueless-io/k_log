@@ -85,17 +85,17 @@ RSpec.describe KLog::LogStructure do
 
         context 'when input is hash -> hash(:symbolized)' do
           let(:input) { hash_as_sym }
-          it { is_expected.to eq(expected_output) }
+          it { is_expected.to eq(normalize_hash_string(expected_output)) }
         end
 
         context 'when input is OpenStruct -> hash(:symbolized)' do
           let(:input) { hash_as_open_struct }
-          it { is_expected.to eq(expected_output) }
+          it { is_expected.to eq(normalize_hash_string(expected_output)) }
         end
 
         context 'when input is ComplexStructure::Root -> hash(:symbolized)' do
           let(:input) { hash_as_model }
-          it { is_expected.to eq(expected_output) }
+          it { is_expected.to eq(normalize_hash_string(expected_output)) }
         end
       end
 
@@ -124,7 +124,9 @@ RSpec.describe KLog::LogStructure do
           end
           context 'when data is hash and convert_data_to: :raw' do
             let(:input) { hash_as_sym }
-            it { is_expected.to eq(expected_output) }
+            it 'returns the expected output for hash input' do
+             is_expected.to eq(normalize_hash_string(expected_output))
+           end
           end
         end
 
@@ -156,11 +158,15 @@ RSpec.describe KLog::LogStructure do
           end
           context 'when data is OpenStruct and convert_data_to: :raw' do
             let(:input) { hash_as_open_struct }
-            it { is_expected.to eq(expected_output) }
+            it 'returns the expected output for hash input' do
+             is_expected.to eq(normalize_hash_string(expected_output))
+           end
           end
           context 'when data is hash and convert_data_to: :open_struct' do
             let(:convert_data_to) { :open_struct }
-            it { is_expected.to eq(expected_output) }
+            it 'returns the expected output for hash input' do
+             is_expected.to eq(normalize_hash_string(expected_output))
+           end
           end
         end
 
@@ -192,7 +198,7 @@ RSpec.describe KLog::LogStructure do
             ]
           end
 
-          it { is_expected.to eq(expected_output) }
+          it { is_expected.to eq(normalize_hash_string(expected_output)) }
         end
       end
     end

@@ -12,6 +12,19 @@ module Types
 end
 
 # require 'k_usecases'
+def normalize_hash_string(obj)
+  case obj
+  when String
+    obj.gsub(/:(\w+)\s*=>/, '\1:') # Fix old style => new style
+  when Array
+    obj.map { |item| normalize_hash_string(item) }
+  when Hash
+    normalize_hash_string(obj.to_s) # Turn hash into string then fix it
+  else
+    obj
+  end
+end
+
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
