@@ -45,7 +45,7 @@ files_changed = files_changed.select { |filename| File.file?(filename) }
 # puts files_changed
 # puts '----------------------------------------------------------------------'
 
-unless files_changed.length.zero?
+unless files_changed.empty?
   # puts "#{keywords.join('|')}"
   # puts "#{files_changed.join(' ')}"
 

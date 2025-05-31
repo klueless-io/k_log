@@ -160,14 +160,14 @@ RSpec.describe KLog::LogStructure do
           context 'when data is OpenStruct and convert_data_to: :raw' do
             let(:input) { hash_as_open_struct }
             it 'returns the expected output for hash input' do
-             is_expected.to eq(normalize(expected_output))
-           end
+              is_expected.to eq(normalize(expected_output))
+            end
           end
           context 'when data is hash and convert_data_to: :open_struct' do
             let(:convert_data_to) { :open_struct }
             it 'returns the expected output for hash input' do
-             is_expected.to eq(normalize(expected_output))
-           end
+              is_expected.to eq(normalize(expected_output))
+            end
           end
         end
 
@@ -392,8 +392,8 @@ RSpec.describe KLog::LogStructure do
           let(:people) do
             {
               columns: [
-                { full_name: { display_method: ->(row) { row.full_name } } },
-                { child_count: { display_method: ->(row) { row.child_count } } }
+                { full_name: { display_method: lambda(&:full_name) } },
+                { child_count: { display_method: lambda(&:child_count) } }
               ]
             }
           end
@@ -557,7 +557,7 @@ RSpec.describe KLog::LogStructure do
           let(:people) do
             {
               transform: ->(array) { array.map { |v| KUtil.data.to_open_struct(v) } },
-              filter: ->(row) { row.active }
+              filter: lambda(&:active)
             }
           end
           it { is_expected.to have(6).items }

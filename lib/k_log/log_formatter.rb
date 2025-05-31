@@ -18,7 +18,7 @@ module KLog
 
       severity_value = format("\033[#{color}m%<severity>-5.5s\033[0m", { severity: severity })
 
-      msg = msg.is_a?(String) ? msg : msg.inspect
+      msg = msg.inspect unless msg.is_a?(String)
 
       # "%<time>s %<severity>s %<message>s\n", {
 

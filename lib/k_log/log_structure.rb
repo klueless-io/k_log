@@ -184,7 +184,7 @@ module KLog
 
       # xxxx.pry if graph_node.pry_at?(:before_array_print) # 'puts xmen'
 
-      return if items.length.zero? && graph_node.skip_empty?
+      return if items.empty? && graph_node.skip_empty?
 
       log_heading(graph_node.heading, graph_node.heading_type) if graph_node.heading
 
