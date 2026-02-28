@@ -1,6 +1,6 @@
-require: rubocop-rake
 AllCops:
   TargetRubyVersion: 2.5
+  SuggestExtensions: false
   DisplayCopNames: true
   ExtraDetails: true
   NewCops: enable
@@ -8,11 +8,18 @@ AllCops:
     - "_/**/*"
     - "spec/samples/**/*"
 
+plugins:
+  - rubocop-rake
+
+# plugins:
+#   - rubocop-rake
+#   - rubocop-rspec
+
 Metrics/BlockLength:
   Exclude:
     - "**/spec/**/*"
     - "*.gemspec"
-  IgnoredMethods:
+  AllowedMethods:
     - configure
     - context
     - define
@@ -53,6 +60,8 @@ Style/BlockComments:
   Enabled: false
   Include:
     - "**/spec/*"
+Style/OpenStructUse:
+  Enabled: false
 
 Layout/EndOfLine:
   EnforcedStyle: lf
@@ -60,19 +69,18 @@ Layout/EndOfLine:
 # My Preferences - Start
 Metrics/ClassLength:
   Enabled: false
-Metrics/ModuleLength:
-  Exclude:
-    - "**/spec/**/*"
-Metrics/CyclomaticComplexity:
-  Exclude:
-    - "lib/k_log/log_structure.rb"
-Metrics/PerceivedComplexity:
-  Exclude:
-    - "lib/k_log/log_structure.rb"
 Metrics/AbcSize:
+  Enabled: false
   Exclude:
-    - "lib/k_log/log_structure.rb"
-
+    - "**/*"
+Metrics/CyclomaticComplexity:
+  Enabled: false
+  Exclude:
+    - "**/*"
+Metrics/PerceivedComplexity:
+  Enabled: false
+  Exclude:
+    - "**/*"
 Naming/MemoizedInstanceVariableName:
   Enabled: false
 Naming/VariableNumber:
